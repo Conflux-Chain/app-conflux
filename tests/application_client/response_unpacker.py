@@ -71,11 +71,11 @@ def unpack_sign_tx_response(response: bytes) -> Tuple[int, bytes, int]:
 
 # Unpack from response:
 # response = v (1)
-#            sig (64)
+#            rs (64)
 def unpack_vrs_response(response: bytes) -> Tuple[int, bytes, int]:
     response, v = pop_sized_buf_from_buffer(response, 1)
-    response, der_sig = pop_sized_buf_from_buffer(response, 64)
+    response, sig = pop_sized_buf_from_buffer(response, 64)
 
     assert len(response) == 0
 
-    return 64, der_sig, int.from_bytes(v, byteorder='big')
+    return 64, sig, int.from_bytes(v, byteorder='big')

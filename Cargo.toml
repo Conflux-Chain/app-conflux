@@ -11,6 +11,7 @@ hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc
 # numtoa = "0.2.4"
 ethereum-types = { version = "0.15.1", default-features = false, features = ["rlp"] }
 rlp = { version = "0.6.1", default-features = false, features = ["derive"] }
+k256 = { version = "0.13.4", default-features = false, features = ["ecdsa"] }
 
 [dev-dependencies]
 rustc-hex = { version = "2.1.0", default-features = false }

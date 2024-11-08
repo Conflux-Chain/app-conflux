@@ -16,6 +16,7 @@
  *****************************************************************************/
 use crate::app_ui::sign::ui_display_tx;
 use crate::consts::MAX_TRANSACTION_LEN;
+use crate::crypto::decode_der_sig;
 use crate::types::Transaction;
 use crate::utils::Bip32Path;
 use crate::AppSW;
@@ -118,8 +119,14 @@ fn compute_signature_and_append(comm: &mut Comm, ctx: &mut TxContext) -> Result<
     let (sig, siglen, parity) = Secp256k1::derive_from_path(ctx.path.as_ref())
         .deterministic_sign(&message_hash)
         .map_err(|_| AppSW::TxSignFail)?;
-    comm.append(&[siglen as u8]);
-    comm.append(&sig[..siglen as usize]);
+
+    let mut r: [u8; 32] = [0u8; 32];
+    let mut s: [u8; 32] = [0u8; 32];
+    let _ =
+        decode_der_sig(&sig[..siglen as usize], &mut r, &mut s).map_err(|_| AppSW::TxSignFail)?;
+
     comm.append(&[parity as u8]);
+    comm.append(&r);
+    comm.append(&s);
     Ok(())
 }

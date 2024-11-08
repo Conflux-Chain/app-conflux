@@ -136,9 +136,9 @@ Subsequent data blocks:
 
 | Description | Length |
 | ----------- | ------ |
-| sig len           | 1      |
-| der_sig           | var    |
-| v(parity)         | 1      |
+| v           | 1      |
+| r           | 32     |
+| s           | 1      |
 
 #### Examples
 
@@ -194,9 +194,7 @@ The same transaction sent in two chunks:
 | ------ | ------ | ------ | ------ | ------ | ------------------------------------------------ |
 | `0xe0` | `0x03` | `0x80` | `0x00` | `0x16` | `0x5cc889f5aa624eac1f55843b9aca0081800182040580` |
 
-**Outdated format Response(v r s)**: `00 f9071161c2dbc19dabf54d14d42944cecacf61943a9898f4f64c8aa6d23a58b6 64ea364f092d23d7a94388f2f43cf54a86fe644d221e822210fde413d406ebb6 9000`
-
-**Response**: to be added
+**Response**: `00 f9071161c2dbc19dabf54d14d42944cecacf61943a9898f4f64c8aa6d23a58b6 64ea364f092d23d7a94388f2f43cf54a86fe644d221e822210fde413d406ebb6 9000`
 
 ## SIGN_PERSONAL
 

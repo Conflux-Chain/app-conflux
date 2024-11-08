@@ -68,3 +68,7 @@ You can purchase new hardware wallets like the Nano S Plus, Flex, or Stax. Impor
 ### 3. I am a Conflux eSpace user, which app should I use?
 
 Since the Conflux eSpace is fully compatible with the Ethereum, you can use the Ethereum app + MetaMask to interact with eSpace.
+
+### 4. Does this app support the Conflux 1559 hardfork?
+
+Yes

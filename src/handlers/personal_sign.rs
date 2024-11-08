@@ -1,6 +1,6 @@
 use crate::app_ui::sign::ui_display_msg;
 use crate::consts::{MAX_TRANSACTION_LEN, PERSONAL_SIGN_PREFIX};
-use crate::crypto::convert_der_to_rs;
+use crate::crypto::decode_der_sig;
 use crate::handlers::sign_tx::TxContext;
 use crate::AppSW;
 use alloc::{format, vec::Vec};
@@ -69,8 +69,8 @@ fn compute_signature_and_append(comm: &mut Comm, ctx: &mut TxContext) -> Result<
 
     let mut r: [u8; 32] = [0u8; 32];
     let mut s: [u8; 32] = [0u8; 32];
-    let _ = convert_der_to_rs(&sig[..siglen as usize], &mut r, &mut s)
-        .map_err(|_| AppSW::TxSignFail)?;
+    let _ =
+        decode_der_sig(&sig[..siglen as usize], &mut r, &mut s).map_err(|_| AppSW::TxSignFail)?;
 
     comm.append(&[parity as u8]);
     comm.append(&r);
