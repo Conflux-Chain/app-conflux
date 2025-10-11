@@ -19,14 +19,14 @@ use crate::cfx_addr::{cfx_addr_encode, Network};
 use crate::consts::ADDRRESS_BYTES_LEN;
 use crate::AppSW;
 
-use ledger_device_sdk::nbgl::{NbglAddressReview, NbglGlyph};
 use include_gif::include_gif;
+use ledger_device_sdk::nbgl::{NbglAddressReview, NbglGlyph};
 
 pub fn ui_display_pk(addr: &[u8], chain_id: u32) -> Result<bool, AppSW> {
     let addr = &addr[addr.len() - ADDRRESS_BYTES_LEN..]; // last 20 bytes
     let network = Network::from_network_id(chain_id as u64);
     let cfx_addr = cfx_addr_encode(addr, network).map_err(|_e| AppSW::AddrDisplayFail)?;
-    
+
     #[cfg(any(target_os = "stax", target_os = "flex"))]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
     #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]

@@ -185,7 +185,7 @@ extern "C" fn sample_main() {
     init_comm(&mut comm);
 
     let mut tx_ctx = TxContext::new();
-    
+
     tx_ctx.home = ui_menu_main(&mut comm);
     tx_ctx.home.show_and_return();
 
