@@ -42,18 +42,17 @@ use handlers::{
     get_version::handler_get_version,
     sign_tx::{handler_sign_tx, TxContext},
 };
-use ledger_device_sdk::io::{ApduHeader, Comm, Reply, StatusWords};
-
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
-use ledger_device_sdk::io::Event;
+use ledger_device_sdk::{
+    io::{ApduHeader, Comm, Reply, StatusWords},
+    nbgl::init_comm,
+};
 
 ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
 
 // Required for using String, Vec, format!...
 extern crate alloc;
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
-use ledger_device_sdk::nbgl::{init_comm, NbglReviewStatus, StatusType};
+use ledger_device_sdk::nbgl::{NbglReviewStatus, StatusType};
 
 // P2 for last APDU to receive.
 const P2_SIGN_TX_LAST: u8 = 0x00;
@@ -151,7 +150,6 @@ impl TryFrom<ApduHeader> for Instruction {
     }
 }
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
 fn show_status_and_home_if_needed(ins: &Instruction, tx_ctx: &mut TxContext, status: &AppSW) {
     let (show_status, status_type) = match (ins, status) {
         (
@@ -184,28 +182,15 @@ extern "C" fn sample_main() {
     // If any APDU with a wrong class value is received, comm will respond automatically with
     // BadCla status word.
     let mut comm = Comm::new().set_expected_cla(0xe0);
+    init_comm(&mut comm);
 
     let mut tx_ctx = TxContext::new();
-
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    {
-        // Initialize reference to Comm instance for NBGL
-        // API calls.
-        init_comm(&mut comm);
-        tx_ctx.home = ui_menu_main(&mut comm);
-        tx_ctx.home.show_and_return();
-    }
+    
+    tx_ctx.home = ui_menu_main(&mut comm);
+    tx_ctx.home.show_and_return();
 
     loop {
-        #[cfg(any(target_os = "stax", target_os = "flex"))]
         let ins: Instruction = comm.next_command();
-
-        #[cfg(not(any(target_os = "stax", target_os = "flex")))]
-        let ins = if let Event::Command(ins) = ui_menu_main(&mut comm) {
-            ins
-        } else {
-            continue;
-        };
 
         let _status = match handle_apdu(&mut comm, &ins, &mut tx_ctx) {
             Ok(()) => {
@@ -217,7 +202,6 @@ extern "C" fn sample_main() {
                 sw
             }
         };
-        #[cfg(any(target_os = "stax", target_os = "flex"))]
         show_status_and_home_if_needed(&ins, &mut tx_ctx, &_status);
     }
 }

@@ -26,14 +26,12 @@ use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};
 use ledger_device_sdk::io::Comm;
 use rlp_decoder::decode;
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
 use ledger_device_sdk::nbgl::NbglHomeAndSettings;
 
 pub struct TxContext {
     pub raw_tx: Vec<u8>,
     pub path: Bip32Path,
     pub review_finished: bool,
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
     pub home: NbglHomeAndSettings,
 }
 
@@ -45,7 +43,6 @@ impl TxContext {
             raw_tx: Vec::new(),
             path: Default::default(),
             review_finished: false,
-            #[cfg(any(target_os = "stax", target_os = "flex"))]
             home: Default::default(),
         }
     }
