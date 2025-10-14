@@ -17,22 +17,22 @@
 use include_gif::include_gif;
 use ledger_device_sdk::io::Comm;
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 use ledger_device_sdk::ui::{
     bitmaps::{Glyph, BACK, CERTIFICATE, COGGLE, DASHBOARD_X},
     gadgets::{EventOrPageIndex, MultiPageMenu, Page},
 };
 
 use crate::settings::Settings;
-#[cfg(any(target_os = "stax", target_os = "flex"))]
+#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
 use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 use crate::Instruction;
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 use ledger_device_sdk::io::Event;
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 fn ui_about_menu(comm: &mut Comm) -> Event<Instruction> {
     let pages = [
         &Page::from((["Conflux Core App", "(c) 2024 Conflux"], true)),
@@ -47,7 +47,7 @@ fn ui_about_menu(comm: &mut Comm) -> Event<Instruction> {
     }
 }
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 fn ui_setting_menu(comm: &mut Comm) -> Event<Instruction> {
     let blind_signing_index = 0;
 
@@ -85,7 +85,7 @@ fn ui_setting_menu(comm: &mut Comm) -> Event<Instruction> {
     }
 }
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     const APP_ICON: Glyph = Glyph::from_include(include_gif!("icons/cfx_16.gif"));
     let pages = [
@@ -108,10 +108,13 @@ pub fn ui_menu_main(comm: &mut Comm) -> Event<Instruction> {
     }
 }
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
+#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
 pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
+    #[cfg(target_os = "apex_p")]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
 
     let settings_strings = [
         ["Blind Signing", "Enable transaction blind signing."],
@@ -122,10 +125,10 @@ pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     // Display the home screen.
     NbglHomeAndSettings::new()
         .glyph(&CFX)
-        .settings(settings.get_mut(), &settings_strings)
         .infos(
             "Conflux",
             env!("CARGO_PKG_VERSION"),
             env!("CARGO_PKG_AUTHORS"),
         )
+        .settings(settings.get_mut(), &settings_strings)
 }

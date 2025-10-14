@@ -1,11 +1,11 @@
 [package]
 name = "conflux"
-version = "2.1.0"
+version = "2.2.0"
 authors = ["Conflux Foundation"]
 edition = "2021"
 
 [dependencies]
-ledger_device_sdk = "1.27.1"
+ledger_device_sdk = "1.27.2"
 include_gif = "1.2.4"
 hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc"] }
 # numtoa = "0.2.4"
@@ -42,5 +42,8 @@ icon = "icons/cfx_32.gif"
 [package.metadata.ledger.flex]
 icon = "icons/cfx_40.gif"
 
+[package.metadata.ledger.apex_p]
+icon = "icons/cfx_32.png"
+
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("stax", "flex", "nanos", "nanox", "nanosplus"))'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("apex_p", "stax", "flex", "nanos", "nanox", "nanosplus"))'] }

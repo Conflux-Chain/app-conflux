@@ -20,15 +20,15 @@ use crate::settings::Settings;
 use crate::types::{Transaction, U256};
 use crate::AppSW;
 
-#[cfg(not(any(target_os = "stax", target_os = "flex")))]
+#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
 use ledger_device_sdk::ui::{
     bitmaps::{CROSSMARK, EYE, VALIDATE_14, WARNING},
     gadgets::{clear_screen, Field, MultiFieldReview, Page},
 };
 
-#[cfg(any(target_os = "stax", target_os = "flex"))]
+#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
 use include_gif::include_gif;
-#[cfg(any(target_os = "stax", target_os = "flex"))]
+#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
 use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
 
 use alloc::{format, vec};
@@ -91,7 +91,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     let settings: Settings = Default::default();
 
     // Create transaction review
-    #[cfg(not(any(target_os = "stax", target_os = "flex")))]
+    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
     {
         if !fully_decoded && settings.get_element(0)? == 0 {
             // show warning and return
@@ -121,7 +121,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
         Ok(my_review.show())
     }
 
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    #[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
     {
         if !fully_decoded && settings.get_element(0)? == 0 {
             let confirmed = NbglChoice::new().show(
