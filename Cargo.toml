@@ -5,14 +5,14 @@ authors = ["Conflux Foundation"]
 edition = "2021"
 
 [dependencies]
-ledger_device_sdk = "1.27.2"
+ledger_device_sdk = "1.27.3"
 include_gif = "1.2.4"
 hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc"] }
 # numtoa = "0.2.4"
 k256 = { version = "0.13.4", default-features = false, features = ["ecdsa"] }
 uint = { version = "0.10.0", default-features = false }
 rlp-decoder = { version = "0.1.0", default-features = false }
-bigdecimal = { version = "0.4.8", default-features = false }
+bigdecimal = { version = "0.4.9", default-features = false }
 
 [dev-dependencies]
 rustc-hex = { version = "2.1.0", default-features = false }

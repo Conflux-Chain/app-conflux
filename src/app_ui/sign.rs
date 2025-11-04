@@ -140,7 +140,10 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
             ctx.home.set_start_page(PageIndex::Home);
         }
         // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
+        #[cfg(any(target_os = "stax", target_os = "flex"))]
         const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
+        #[cfg(target_os = "apex_p")]
+        const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
         // Create NBGL review. Maximum number of fields and string buffer length can be customised
         // with constant generic parameters of NbglReview. Default values are 32 and 1024 respectively.
         let mut review: NbglReview = NbglReview::new()
