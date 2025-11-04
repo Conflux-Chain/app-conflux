@@ -20,9 +20,9 @@ use crate::settings::Settings;
 use crate::types::{Transaction, U256};
 use crate::AppSW;
 
+use alloc::{format, vec};
 use include_gif::include_gif;
 use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
-use alloc::{format, vec};
 
 /// Displays a transaction and returns true if user approved it.
 ///
@@ -101,7 +101,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
     #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-     #[cfg(target_os = "apex_p")]
+    #[cfg(target_os = "apex_p")]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
     // Create NBGL review. Maximum number of fields and string buffer length can be customised
     // with constant generic parameters of NbglReview. Default values are 32 and 1024 respectively.

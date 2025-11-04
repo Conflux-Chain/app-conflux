@@ -31,7 +31,7 @@ pub fn ui_display_pk(addr: &[u8], chain_id: u32) -> Result<bool, AppSW> {
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
     #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-     #[cfg(target_os = "apex_p")]
+    #[cfg(target_os = "apex_p")]
     const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
     // Display the address confirmation screen.
     Ok(NbglAddressReview::new()
