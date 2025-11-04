@@ -1,6 +1,6 @@
 [package]
 name = "conflux"
-version = "2.2.0"
+version = "2.3.0"
 authors = ["Conflux Foundation"]
 edition = "2021"
 
@@ -22,7 +22,8 @@ opt-level = 'z'
 lto = true
 
 [features]
-default = []
+default = ["ledger_device_sdk/nano_nbgl"]
+debug = ["ledger_device_sdk/debug"]
 
 [package.metadata.ledger]
 curve = ["secp256k1"]

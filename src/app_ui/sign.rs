@@ -20,18 +20,9 @@ use crate::settings::Settings;
 use crate::types::{Transaction, U256};
 use crate::AppSW;
 
-#[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-use ledger_device_sdk::ui::{
-    bitmaps::{CROSSMARK, EYE, VALIDATE_14, WARNING},
-    gadgets::{clear_screen, Field, MultiFieldReview, Page},
-};
-
-#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
-use include_gif::include_gif;
-#[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
-use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
-
 use alloc::{format, vec};
+use include_gif::include_gif;
+use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
 
 /// Displays a transaction and returns true if user approved it.
 ///
@@ -90,80 +81,47 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
 
     let settings: Settings = Default::default();
 
-    // Create transaction review
-    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    {
-        if !fully_decoded && settings.get_element(0)? == 0 {
-            // show warning and return
-            let warning =
-                Page::from((["Blind signing must", "be enabled in Settings"], &CROSSMARK));
-            clear_screen();
-            warning.place_and_wait();
-            return Ok(false);
-        }
-
-        if !fully_decoded {
-            // show warning
-            let warning = Page::from((["Blind", "Signing"], &WARNING));
-            clear_screen();
-            warning.place_and_wait();
-        }
-
-        let my_review = MultiFieldReview::new(
-            &my_fields,
-            &["Review ", "Transaction"],
-            Some(&EYE),
-            "Approve",
-            Some(&VALIDATE_14),
-            "Reject",
-            Some(&CROSSMARK),
+    if !fully_decoded && settings.get_element(0)? == 0 {
+        let confirmed = NbglChoice::new().show(
+            "This transaction cannot be clear-signed",
+            "Enable blind signing in the settings to sign this transaction.",
+            "Go to settings",
+            "Reject transaction",
         );
-        Ok(my_review.show())
+
+        if confirmed {
+            ctx.home.set_start_page(PageIndex::Settings(0));
+        }
+
+        return Ok(false);
+    } else {
+        ctx.home.set_start_page(PageIndex::Home);
+    }
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
+    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
+    #[cfg(target_os = "apex_p")]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
+    // Create NBGL review. Maximum number of fields and string buffer length can be customised
+    // with constant generic parameters of NbglReview. Default values are 32 and 1024 respectively.
+    let mut review: NbglReview = NbglReview::new()
+        .titles(
+            "Review transaction\nto send CFX",
+            "",
+            "Sign transaction\nto send CFX",
+        )
+        .glyph(&CFX);
+
+    if !fully_decoded {
+        review = review.blind();
     }
 
-    #[cfg(any(target_os = "stax", target_os = "flex", target_os = "apex_p"))]
-    {
-        if !fully_decoded && settings.get_element(0)? == 0 {
-            let confirmed = NbglChoice::new().show(
-                "This transaction cannot be clear-signed",
-                "Enable blind signing in the settings to sign this transaction.",
-                "Go to settings",
-                "Reject transaction",
-            );
-
-            if confirmed {
-                ctx.home.set_start_page(PageIndex::Settings(0));
-            }
-
-            return Ok(false);
-        } else {
-            ctx.home.set_start_page(PageIndex::Home);
-        }
-        // Load glyph from 64x64 4bpp gif file with include_gif macro. Creates an NBGL compatible glyph.
-        #[cfg(any(target_os = "stax", target_os = "flex"))]
-        const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
-        #[cfg(target_os = "apex_p")]
-        const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
-        // Create NBGL review. Maximum number of fields and string buffer length can be customised
-        // with constant generic parameters of NbglReview. Default values are 32 and 1024 respectively.
-        let mut review: NbglReview = NbglReview::new()
-            .titles(
-                "Review transaction\nto send CFX",
-                "",
-                "Sign transaction\nto send CFX",
-            )
-            .glyph(&CFX);
-
-        if !fully_decoded {
-            review = review.blind();
-        }
-
-        // If second setting switch is disabled do not display the transaction data
-        if settings.get_element(1)? == 0 && !tx.data.is_empty() {
-            let field_len = my_fields.len() - 1;
-            Ok(review.show(&my_fields[0..field_len]))
-        } else {
-            Ok(review.show(&my_fields))
-        }
+    // If second setting switch is disabled do not display the transaction data
+    if settings.get_element(1)? == 0 && !tx.data.is_empty() {
+        let field_len = my_fields.len() - 1;
+        Ok(review.show(&my_fields[0..field_len]))
+    } else {
+        Ok(review.show(&my_fields))
     }
 }
