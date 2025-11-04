@@ -1,31 +1,13 @@
-/*****************************************************************************
- *   Ledger App Conflux Rust.
- *   (c) 2023 Conflux Foundation.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *****************************************************************************/
 use super::common::TxContext;
-use crate::app_ui::sign::ui_display_tx;
-use crate::consts::MAX_TRANSACTION_LEN;
+use crate::app_ui::sign::ui_display_191_message;
 use crate::crypto::decode_der_sig;
-use crate::types::Transaction;
 use crate::AppSW;
+use alloc::{format, vec::Vec};
 use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
 use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};
 use ledger_device_sdk::io::Comm;
-use rlp_decoder::decode;
 
-pub fn handler_sign_tx(
+pub fn handler_sign_191(
     comm: &mut Comm,
     chunk: u8,
     more: bool,
@@ -43,10 +25,6 @@ pub fn handler_sign_tx(
     // Next chunks, append data to raw_tx and return or parse
     // the transaction if it is the last chunk.
     } else {
-        if ctx.raw_tx.len() + data.len() > MAX_TRANSACTION_LEN {
-            return Err(AppSW::TxWrongLength);
-        }
-
         // Append data to raw_tx
         ctx.raw_tx.extend(data);
 
@@ -56,15 +34,12 @@ pub fn handler_sign_tx(
             Ok(())
         // Otherwise, try to parse the transaction
         } else {
-            // Try to deserialize the transaction
-            let tx: Transaction =
-                decode(ctx.raw_tx.as_slice()).map_err(|_| AppSW::TxParsingFail)?;
-            // Display transaction. If user approves
-            // the transaction, sign it. Otherwise,
+            // Display 191 message. If user approves
+            // the message, sign it. Otherwise,
             // return a "deny" status word.
-            if ui_display_tx(&tx, ctx)? {
+            if ui_display_191_message(ctx)? {
                 ctx.review_finished = true;
-                compute_tx_signature_and_append(comm, ctx)
+                compute_191_signature_and_append(comm, ctx)
             } else {
                 ctx.review_finished = true;
                 Err(AppSW::Deny)
@@ -73,12 +48,22 @@ pub fn handler_sign_tx(
     }
 }
 
-// compute tx signature and append to comm
-fn compute_tx_signature_and_append(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
+fn eip191_personal_message_bytes(message: &[u8]) -> Vec<u8> {
+    let prefix = format!("\x19Ethereum Signed Message:\n{}", message.len());
+    let mut out = Vec::with_capacity(prefix.len() + message.len());
+    out.extend_from_slice(prefix.as_bytes());
+    out.extend_from_slice(message);
+    out
+}
+
+// compute 191 signature and append to comm
+fn compute_191_signature_and_append(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
     let mut keccak256 = Keccak256::new();
     let mut message_hash: [u8; 32] = [0u8; 32];
 
-    let _ = keccak256.hash(&ctx.raw_tx, &mut message_hash);
+    let raw_data = eip191_personal_message_bytes(&ctx.raw_tx);
+
+    let _ = keccak256.hash(&raw_data, &mut message_hash);
 
     let (sig, siglen, parity) = Secp256k1::derive_from_path(ctx.path.as_ref())
         .deterministic_sign(&message_hash)

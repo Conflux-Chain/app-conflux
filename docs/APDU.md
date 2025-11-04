@@ -231,3 +231,55 @@ Subsequent data blocks:
 ```
 
 **Response**: `00 f9071161c2dbc19dabf54d14d42944cecacf61943a9898f4f64c8aa6d23a58b6 64ea364f092d23d7a94388f2f43cf54a86fe644d221e822210fde413d406ebb6 9000`
+
+### PERSONAL_SIGN
+
+#### Request format
+
+| CLA  | INS  | P1                                      | P2   | Lc       | Le       |
+| ---- | ---- | --------------------------------------- | ---- | -------- | -------- |
+| `e0` | `04` | `00`: first data block      | `80` more | variable | variable |
+|      |      | `01`-`03`: subsequent data block index |  `00` last    |          |          |
+
+##### Request payload
+
+First data block:
+
+| Description                                      | Length |
+| ------------------------------------------------ | ------ |
+| Number of BIP 32 derivations to perform (max 10) | 1      |
+| First derivation index (big endian)              | 4      |
+| ...                                              | 4      |
+| Last derivation index (big endian)               | 4      |
+
+Subsequent data blocks:
+
+| Description    | Length |
+| -------------- | ------ |
+| Message data chunk | var    |
+
+#### **Response** format
+
+| Description | Length |
+| ----------- | ------ |
+| v           | 1      |
+| r           | 32     |
+| s           | 32      |
+
+#### Examples
+
+**Command**: `e004008015058000002c800001f7800000000000000000000000`
+
+| CLA    | INS    | P1     | P2     | Lc     | Le                                                                                                                                                       |
+| ------ | ------ | ------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0xe0` | `0x04` | `0x00` | `0x80` | `0x15` | `0x05 0x8000002c 0x800001f7 0x80000000 0x00000000 0x00000000` |
+
+`44'/503'/0'/0/0` is encoded as `0x05 0x8000002c 0x800001f7 0x80000000 0x00000000 0x00000000`.
+
+**Command**: `e0040100c48656c6c6f2c20576f726c64`
+
+| CLA    | INS    | P1     | P2     | Lc     | Le                                                                                                                                                       |
+| ------ | ------ | ------ | ------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0xe0` | `0x04` | `0x01` | `0x00` | `0xc` | `0x48656c6c6f2c20576f726c64` |
+
+`0x48656c6c6f2c20576f726c64` is the message "Hello, World" in hex.

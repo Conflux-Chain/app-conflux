@@ -9,7 +9,8 @@ from ecdsa.util import sigdecode_der, sigdecode_string
 
 ROOT_SCREENSHOT_PATH = Path(__file__).parent.resolve()
 
-PREFIX = b"\x19Conflux Signed Message:\n"
+PREFIX = b"\x19Ethereum Signed Message:\n"
+CONFLUX_PREFIX = b"\x19Conflux Signed Message:\n"
 
 # Check if a des signature of a given message is valid
 def check_signature_validity(public_key: bytes, signature: bytes, message: bytes) -> bool:
