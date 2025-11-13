@@ -15,7 +15,7 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::cfx_addr::{cfx_addr_encode, Network};
-use crate::handlers::sign_tx::TxContext;
+use crate::handlers::common::TxContext;
 use crate::settings::Settings;
 use crate::types::{Transaction, U256};
 use crate::AppSW;
@@ -124,4 +124,26 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     } else {
         Ok(review.show(&my_fields))
     }
+}
+
+pub fn ui_display_191_message(ctx: &mut TxContext) -> Result<bool, AppSW> {
+    let msg = core::str::from_utf8(&ctx.raw_tx).map_err(|_| AppSW::TxDisplayFail)?;
+
+    let my_fields = vec![Field {
+        name: "Message",
+        value: msg,
+    }];
+
+    #[cfg(any(target_os = "stax", target_os = "flex"))]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
+    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
+    #[cfg(target_os = "apex_p")]
+    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
+
+    let review: NbglReview = NbglReview::new()
+        .titles("Review Message", "", "Sign Message")
+        .glyph(&CFX);
+
+    Ok(review.show(&my_fields))
 }

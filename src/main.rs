@@ -25,8 +25,10 @@ mod app_ui {
     pub mod sign;
 }
 mod handlers {
+    pub mod common;
     pub mod get_public_key;
     pub mod get_version;
+    pub mod sign_191;
     pub mod sign_tx;
 }
 mod cfx_addr;
@@ -38,9 +40,8 @@ mod settings;
 
 use app_ui::menu::ui_menu_main;
 use handlers::{
-    get_public_key::handler_get_public_key,
-    get_version::handler_get_version,
-    sign_tx::{handler_sign_tx, TxContext},
+    common::TxContext, get_public_key::handler_get_public_key, get_version::handler_get_version,
+    sign_191::handler_sign_191, sign_tx::handler_sign_tx,
 };
 use ledger_device_sdk::{
     io::{ApduHeader, Comm, Reply, StatusWords},
@@ -111,6 +112,10 @@ pub enum Instruction {
         chunk: u8,
         more: bool,
     },
+    Sign191 {
+        chunk: u8,
+        more: bool,
+    },
 }
 
 impl TryFrom<ApduHeader> for Instruction {
@@ -137,6 +142,13 @@ impl TryFrom<ApduHeader> for Instruction {
             (3, P1_SIGN_TX_START, P2_SIGN_TX_MORE)
             | (3, 1..=P1_SIGN_TX_MAX, P2_SIGN_TX_LAST | P2_SIGN_TX_MORE) => {
                 Ok(Instruction::SignTx {
+                    chunk: value.p1,
+                    more: value.p2 == P2_SIGN_TX_MORE,
+                })
+            }
+            (4, P1_SIGN_TX_START, P2_SIGN_TX_MORE)
+            | (4, 1..=P1_SIGN_TX_MAX, P2_SIGN_TX_LAST | P2_SIGN_TX_MORE) => {
+                Ok(Instruction::Sign191 {
                     chunk: value.p1,
                     more: value.p2 == P2_SIGN_TX_MORE,
                 })
@@ -215,5 +227,6 @@ fn handle_apdu(comm: &mut Comm, ins: &Instruction, ctx: &mut TxContext) -> Resul
             return_chain_code,
         } => handler_get_public_key(comm, *display, *return_chain_code),
         Instruction::SignTx { chunk, more } => handler_sign_tx(comm, *chunk, *more, ctx),
+        Instruction::Sign191 { chunk, more } => handler_sign_191(comm, *chunk, *more, ctx),
     }
 }
