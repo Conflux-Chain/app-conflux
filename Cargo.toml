@@ -5,7 +5,7 @@ authors = ["Conflux Foundation"]
 edition = "2021"
 
 [dependencies]
-ledger_device_sdk = "1.27.3"
+ledger_device_sdk = "1.28.0"
 include_gif = "1.2.4"
 hex = { version = "0.4.3", default-features = false, features = ["serde", "alloc"] }
 # numtoa = "0.2.4"
