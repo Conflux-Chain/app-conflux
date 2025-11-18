@@ -15,12 +15,13 @@
  *  limitations under the License.
  *****************************************************************************/
 use crate::cfx_addr::{cfx_addr_encode, Network};
-use crate::handlers::common::TxContext;
+use crate::handlers::common::Context;
 use crate::settings::Settings;
 use crate::types::{Transaction, U256};
 use crate::AppSW;
 
 use alloc::{format, vec};
+use alloy_primitives::hex;
 use include_gif::include_gif;
 use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
 
@@ -32,7 +33,7 @@ use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageInde
 ///
 /// * `tx` - Transaction to be displayed for validation
 #[allow(unused_variables)]
-pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppSW> {
+pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW> {
     let fully_decoded = tx.fully_decoded();
 
     let value_str = tx.value.cfx_str().ok_or(AppSW::TxDisplayFail)?;
@@ -126,7 +127,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     }
 }
 
-pub fn ui_display_191_message(ctx: &mut TxContext) -> Result<bool, AppSW> {
+pub fn ui_display_191_message(ctx: &mut Context) -> Result<bool, AppSW> {
     let msg = core::str::from_utf8(&ctx.raw_tx).map_err(|_| AppSW::TxDisplayFail)?;
 
     let my_fields = vec![Field {

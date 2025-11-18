@@ -16,8 +16,8 @@
  *****************************************************************************/
 
 use crate::app_ui::address::ui_display_pk;
+use crate::bip32_path::Bip32Path;
 use crate::consts::{ADDRRESS_BYTES_LEN, HASH_BYTES_LEN};
-use crate::utils::Bip32Path;
 use crate::AppSW;
 use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
 use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};

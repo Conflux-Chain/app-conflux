@@ -1,0 +1,425 @@
+# documentation about APDU format is available here:
+# https://github.com/LedgerHQ/app-ethereum/blob/develop/doc/ethapp.adoc
+
+import struct
+import math
+from enum import IntEnum
+from typing import Optional
+from ragger.bip import pack_derivation_path
+
+from .eip712 import EIP712FieldType
+
+
+class InsType(IntEnum):
+    GET_PUBLIC_ADDR = 0x02
+    GET_ETH2_PUBLIC_ADDR = 0x0e
+    SIGN = 0x04
+    GET_APP_CONFIGURATION = 0x06
+    PERSONAL_SIGN = 0x08
+    PROVIDE_ERC20_TOKEN_INFORMATION = 0x0a
+    EXTERNAL_PLUGIN_SETUP = 0x12
+    PROVIDE_NFT_INFORMATION = 0x14
+    SET_PLUGIN = 0x16
+    PERFORM_PRIVACY_OPERATION = 0x18
+    EIP712_SEND_STRUCT_DEF = 0x1a
+    EIP712_SEND_STRUCT_IMPL = 0x1c
+    EIP712_SEND_FILTERING = 0x1e
+    EIP712_SIGN = 0x0c
+    GET_CHALLENGE = 0x20
+    PROVIDE_TRUSTED_NAME = 0x22
+    PROVIDE_ENUM_VALUE = 0x24
+    PROVIDE_TRANSACTION_INFO = 0x26
+    PROVIDE_TRANSACTION_FIELD_DESC = 0x28
+    PROVIDE_PROXY_INFO = 0x2a
+    PROVIDE_NETWORK_INFORMATION = 0x30
+    PROVIDE_TX_SIMULATION = 0x32
+    SIGN_EIP7702_AUTHORIZATION = 0x34
+    PROVIDE_SAFE_ACCOUNT = 0x36
+
+
+class P1Type(IntEnum):
+    COMPLETE_SEND = 0x00
+    PARTIAL_SEND = 0x01
+    SIGN_FIRST_CHUNK = 0x00
+    SIGN_SUBSQT_CHUNK = 0x80
+    FIRST_CHUNK = 0x01
+    FOLLOWING_CHUNK = 0x00
+    OPT_IN_TX_CHECK = 0x01
+
+
+class P2Type(IntEnum):
+    STRUCT_NAME = 0x00
+    STRUCT_FIELD = 0xff
+    ARRAY = 0x0f
+    LEGACY_IMPLEM = 0x00
+    NEW_IMPLEM = 0x01
+    FILTERING_ACTIVATE = 0x00
+    FILTERING_DISCARDED_PATH = 0x01
+    FILTERING_MESSAGE_INFO = 0x0f
+    FILTERING_CALLDATA_SPENDER = 0xf4
+    FILTERING_CALLDATA_AMOUNT = 0xf5
+    FILTERING_CALLDATA_SELECTOR = 0xf6
+    FILTERING_CALLDATA_CHAIN_ID = 0xf7
+    FILTERING_CALLDATA_CALLEE = 0xf8
+    FILTERING_CALLDATA_VALUE = 0xf9
+    FILTERING_CALLDATA_INFO = 0xfa
+    FILTERING_TRUSTED_NAME = 0xfb
+    FILTERING_DATETIME = 0xfc
+    FILTERING_TOKEN_ADDR_CHECK = 0xfd
+    FILTERING_AMOUNT_FIELD = 0xfe
+    FILTERING_RAW = 0xff
+    NETWORK_CONFIG = 0x00
+    NETWORK_ICON = 0x01
+
+
+class CommandBuilder:
+    _CLA: int = 0xE0
+
+    def _intToBytes(self, i: int) -> bytes:
+        if i == 0:
+            return b"\x00"
+        return i.to_bytes(math.ceil(i.bit_length() / 8), 'big')
+
+    def _serialize(self,
+                   ins: InsType,
+                   p1: int,
+                   p2: int,
+                   cdata: bytes = bytes()) -> bytes:
+
+        header = bytearray()
+        header.append(self._CLA)
+        header.append(ins)
+        header.append(p1)
+        header.append(p2)
+        header.append(len(cdata))
+        return header + cdata
+
+    def eip712_send_struct_def_struct_name(self, name: str) -> bytes:
+        return self._serialize(InsType.EIP712_SEND_STRUCT_DEF,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.STRUCT_NAME,
+                               name.encode())
+
+    def get_app_configuration(self) -> bytes:
+        return self._serialize(InsType.GET_APP_CONFIGURATION,
+                               0x00,
+                               0x00)
+
+    def eip712_send_struct_def_struct_field(self,
+                                            field_type: EIP712FieldType,
+                                            type_name: str,
+                                            type_size: int,
+                                            array_levels: list,
+                                            key_name: str) -> bytes:
+        data = bytearray()
+        typedesc = 0
+        typedesc |= (len(array_levels) > 0) << 7
+        typedesc |= (type_size is not None) << 6
+        typedesc |= field_type
+        data.append(typedesc)
+        if field_type == EIP712FieldType.CUSTOM:
+            data.append(len(type_name))
+            data += type_name.encode()
+        if type_size is not None:
+            data.append(type_size)
+        if len(array_levels) > 0:
+            data.append(len(array_levels))
+            for level in array_levels:
+                data.append(0 if level is None else 1)
+                if level is not None:
+                    data.append(level)
+        data.append(len(key_name))
+        data += key_name.encode()
+        return self._serialize(InsType.EIP712_SEND_STRUCT_DEF,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.STRUCT_FIELD,
+                               data)
+
+    def eip712_send_struct_impl_root_struct(self, name: str) -> bytes:
+        return self._serialize(InsType.EIP712_SEND_STRUCT_IMPL,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.STRUCT_NAME,
+                               name.encode())
+
+    def eip712_send_struct_impl_array(self, size: int) -> bytes:
+        data = bytearray()
+        data.append(size)
+        return self._serialize(InsType.EIP712_SEND_STRUCT_IMPL,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.ARRAY,
+                               data)
+
+    def eip712_send_struct_impl_struct_field(self, data: bytearray) -> list[bytes]:
+        chunks = []
+        # Add a 16-bit integer with the data's byte length (network byte order)
+        data_w_length = bytearray()
+        data_w_length += struct.pack(">H", len(data))
+        data_w_length += data
+        while len(data_w_length) > 0:
+            p1 = P1Type.PARTIAL_SEND if len(data_w_length) > 0xff else P1Type.COMPLETE_SEND
+            chunks.append(self._serialize(InsType.EIP712_SEND_STRUCT_IMPL,
+                                          p1,
+                                          P2Type.STRUCT_FIELD,
+                                          data_w_length[:0xff]))
+            data_w_length = data_w_length[0xff:]
+        return chunks
+
+    def eip712_sign_new(self, bip32_path: str) -> bytes:
+        data = pack_derivation_path(bip32_path)
+        return self._serialize(InsType.EIP712_SIGN,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.NEW_IMPLEM,
+                               data)
+
+    # def eip712_sign_legacy(self,
+    #                        bip32_path: str,
+    #                        domain_hash: bytes,
+    #                        message_hash: bytes) -> bytes:
+    #     data = pack_derivation_path(bip32_path)
+    #     data += domain_hash
+    #     data += message_hash
+    #     return self._serialize(InsType.EIP712_SIGN,
+    #                            P1Type.COMPLETE_SEND,
+    #                            P2Type.LEGACY_IMPLEM,
+    #                            data)
+
+    def eip712_filtering_activate(self):
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.FILTERING_ACTIVATE,
+                               bytearray())
+
+    def _eip712_filtering_send_name(self, name: str, sig: bytes) -> bytes:
+        data = bytearray()
+        data.append(len(name))
+        data += name.encode()
+        data.append(len(sig))
+        data += sig
+        return data
+
+    def eip712_filtering_discarded_path(self, path: str) -> bytes:
+        data = bytearray()
+        data.append(len(path))
+        data += path.encode()
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.FILTERING_DISCARDED_PATH,
+                               data)
+
+    def eip712_filtering_message_info(self, name: str, filters_count: int, sig: bytes) -> bytes:
+        data = bytearray()
+        data.append(len(name))
+        data += name.encode()
+        data.append(filters_count)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               P1Type.COMPLETE_SEND,
+                               P2Type.FILTERING_MESSAGE_INFO,
+                               data)
+
+    def eip712_filtering_amount_join_token(self, token_idx: int, sig: bytes, discarded: bool) -> bytes:
+        data = bytearray()
+        data.append(token_idx)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_TOKEN_ADDR_CHECK,
+                               data)
+
+    def eip712_filtering_amount_join_value(self, token_idx: int, name: str, sig: bytes, discarded: bool) -> bytes:
+        data = bytearray()
+        data.append(len(name))
+        data += name.encode()
+        data.append(token_idx)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_AMOUNT_FIELD,
+                               data)
+
+    def eip712_filtering_datetime(self, name: str, sig: bytes, discarded: bool) -> bytes:
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_DATETIME,
+                               self._eip712_filtering_send_name(name, sig))
+
+    def eip712_filtering_trusted_name(self,
+                                      name: str,
+                                      name_types: list[int],
+                                      name_sources: list[int],
+                                      sig: bytes,
+                                      discarded: bool) -> bytes:
+        data = bytearray()
+        data.append(len(name))
+        data += name.encode()
+        data.append(len(name_types))
+        for t in name_types:
+            data.append(t)
+        data.append(len(name_sources))
+        for s in name_sources:
+            data.append(s)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_TRUSTED_NAME,
+                               data)
+
+    def eip712_filtering_calldata_info(self,
+                                       index: int,
+                                       value_filter_flag: bool,
+                                       callee_filter_flag: int,
+                                       chain_id_filter_flag: bool,
+                                       selector_filter_flag: bool,
+                                       amount_filter_flag: bool,
+                                       spender_filter_flag: int,
+                                       sig: bytes) -> bytes:
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data += struct.pack(">B", value_filter_flag)
+        data += struct.pack(">?", callee_filter_flag)
+        data += struct.pack(">B", chain_id_filter_flag)
+        data += struct.pack(">B", selector_filter_flag)
+        data += struct.pack(">B", amount_filter_flag)
+        data += struct.pack(">?", spender_filter_flag)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(False),
+                               P2Type.FILTERING_CALLDATA_INFO,
+                               data)
+
+    def eip712_filtering_calldata_value(self,
+                                        index: int,
+                                        sig: bytes,
+                                        discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_VALUE,
+                               data)
+
+    def eip712_filtering_calldata_callee(self,
+                                         index: int,
+                                         sig: bytes,
+                                         discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_CALLEE,
+                               data)
+
+    def eip712_filtering_calldata_chain_id(self,
+                                           index: int,
+                                           sig: bytes,
+                                           discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_CHAIN_ID,
+                               data)
+
+    def eip712_filtering_calldata_selector(self,
+                                           index: int,
+                                           sig: bytes,
+                                           discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_SELECTOR,
+                               data)
+
+    def eip712_filtering_calldata_amount(self,
+                                         index: int,
+                                         sig: bytes,
+                                         discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_AMOUNT,
+                               data)
+
+    def eip712_filtering_calldata_spender(self,
+                                          index: int,
+                                          sig: bytes,
+                                          discarded: bool):
+        data = bytearray()
+        data += struct.pack(">B", index)
+        data.append(len(sig))
+        data += sig
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_CALLDATA_SPENDER,
+                               data)
+
+    def eip712_filtering_raw(self, name: str, sig: bytes, discarded: bool) -> bytes:
+        return self._serialize(InsType.EIP712_SEND_FILTERING,
+                               int(discarded),
+                               P2Type.FILTERING_RAW,
+                               self._eip712_filtering_send_name(name, sig))
+
+    def provide_erc20_token_information(self,
+                                        ticker: str,
+                                        addr: bytes,
+                                        decimals: int,
+                                        chain_id: int,
+                                        sig: bytes) -> bytes:
+        payload = bytearray()
+        payload.append(len(ticker))
+        payload += ticker.encode()
+        payload += addr
+        payload += struct.pack(">I", decimals)
+        payload += struct.pack(">I", chain_id)
+        payload += sig
+        return self._serialize(InsType.PROVIDE_ERC20_TOKEN_INFORMATION,
+                               0x00,
+                               0x00,
+                               payload)
+
+    def common_tlv_serialize(self,
+                             ins: InsType,
+                             tlv_payload: bytes,
+                             p1l: list[int] = [0x01, 0x00],
+                             p2l: list[int] = [0x00],
+                             payload: bytes = bytes()) -> list[bytes]:
+        assert len(p1l) in [1, 2]
+        assert len(p2l) in [1, 2]
+        chunks = []
+        payload += struct.pack(">H", len(tlv_payload))
+        payload += tlv_payload
+        p1 = p1l[0]
+        p2 = p2l[0]
+        while len(payload) > 0:
+            chunks.append(self._serialize(ins,
+                                          p1,
+                                          p2,
+                                          payload[:0xff]))
+            payload = payload[0xff:]
+            # -1 so it works with a list of 1 or 2 items
+            p1 = p1l[-1]
+            p2 = p2l[-1]
+        return chunks
+
+    def provide_proxy_info(self, tlv_payload: bytes) -> list[bytes]:
+        return self.common_tlv_serialize(InsType.PROVIDE_PROXY_INFO, tlv_payload)
+
+    def provide_safe_account(self, tlv_payload: bytes, p2: int) -> list[bytes]:
+        return self.common_tlv_serialize(InsType.PROVIDE_SAFE_ACCOUNT, tlv_payload, p2l=[p2])

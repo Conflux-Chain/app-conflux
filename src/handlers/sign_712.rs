@@ -1,0 +1,111 @@
+use crate::crypto::decode_der_sig;
+use crate::eip712::{
+    types::{Eip712FieldDefinition, Eip712FieldValue},
+    Eip712Context,
+};
+use crate::ins_consts::p2_eip712_struct_impl;
+use crate::utils::parse_utf8_string;
+use crate::AppSW;
+use alloc::borrow::ToOwned;
+use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
+use ledger_device_sdk::io::Comm;
+
+pub fn handler_sign_712_struct_definition(
+    comm: &mut Comm,
+    is_struct_name: bool,
+    ctx: &mut Eip712Context,
+) -> Result<(), AppSW> {
+    let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
+
+    if is_struct_name {
+        ctx.complete_one_struct_def();
+        // decode struct name
+        let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidData)?;
+        ctx.current_struct_name = Some(struct_name);
+    } else {
+        // decode struct info
+        if ctx.current_struct_name.is_none() {
+            return Err(AppSW::InvalidData); // We need a struct name before we can add fields
+        }
+
+        let field_definition =
+            Eip712FieldDefinition::from_bytes(&data).map_err(|_| AppSW::InvalidData)?;
+        ctx.current_struct_fields.push(field_definition);
+    }
+
+    Ok(())
+}
+
+// must first pass EIP712Domain implementation, and then primary type's implementation
+pub fn handler_sign_712_struct_impl(
+    comm: &mut Comm,
+    more: bool,
+    data_type: u8,
+    ctx: &mut Eip712Context,
+) -> Result<(), AppSW> {
+    let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
+    match data_type {
+        p2_eip712_struct_impl::ROOT_STRUCT => {
+            ctx.complete_one_struct_def();
+            ctx.parse_eip712_domain().map_err(|_| AppSW::InvalidData)?;
+
+            let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidData)?;
+            ctx.current_root_struct = Some(struct_name);
+        }
+        p2_eip712_struct_impl::ARRAY => {
+            if data.len() != 1 {
+                return Err(AppSW::InvalidData);
+            }
+            ctx.current_struct_field_values
+                .push(Eip712FieldValue::from_bytes(data.to_owned()));
+        }
+        p2_eip712_struct_impl::STRUCT_FIELD => {
+            if data.len() <= 2 {
+                return Err(AppSW::InvalidData);
+            }
+            let bytes = [data[0], data[1]];
+            let size = u16::from_be_bytes(bytes) as usize;
+            let field_value = &data[2..2 + size];
+            ctx.field_data.extend_from_slice(field_value);
+            if !more {
+                ctx.current_struct_field_values
+                    .push(Eip712FieldValue::from_bytes(ctx.field_data.to_owned()));
+                ctx.field_data.clear();
+            }
+        }
+        _ => {
+            // should not happen
+            return Err(AppSW::InvalidData);
+        }
+    }
+    Ok(())
+}
+
+pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), AppSW> {
+    // retrive bip path
+    let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
+    ctx.path = data.try_into()?;
+
+    // compute 712 message hash
+    let message_hash = ctx
+        .eip712_signing_hash()
+        .map_err(|_| AppSW::WrongApduLength)?;
+
+    let (sig, siglen, parity) = Secp256k1::derive_from_path(ctx.path.as_ref())
+        .deterministic_sign(message_hash.as_slice())
+        .map_err(|_| AppSW::TxSignFail)?;
+
+    let mut r: [u8; 32] = [0u8; 32];
+    let mut s: [u8; 32] = [0u8; 32];
+
+    decode_der_sig(&sig[..siglen as usize], &mut r, &mut s).map_err(|_| AppSW::TxSignFail)?;
+
+    comm.append(&[parity as u8]);
+    comm.append(&r);
+    comm.append(&s);
+
+    // reset context
+    ctx.reset();
+
+    Ok(())
+}

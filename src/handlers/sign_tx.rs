@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use super::common::TxContext;
+use super::common::Context;
 use crate::app_ui::sign::ui_display_tx;
 use crate::consts::MAX_TRANSACTION_LEN;
 use crate::crypto::decode_der_sig;
@@ -29,7 +29,7 @@ pub fn handler_sign_tx(
     comm: &mut Comm,
     chunk: u8,
     more: bool,
-    ctx: &mut TxContext,
+    ctx: &mut Context,
 ) -> Result<(), AppSW> {
     // Try to get data from comm
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
@@ -74,7 +74,7 @@ pub fn handler_sign_tx(
 }
 
 // compute tx signature and append to comm
-fn compute_tx_signature_and_append(comm: &mut Comm, ctx: &mut TxContext) -> Result<(), AppSW> {
+fn compute_tx_signature_and_append(comm: &mut Comm, ctx: &mut Context) -> Result<(), AppSW> {
     let mut keccak256 = Keccak256::new();
     let mut message_hash: [u8; 32] = [0u8; 32];
 

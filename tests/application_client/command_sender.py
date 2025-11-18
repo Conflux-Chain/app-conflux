@@ -4,6 +4,8 @@ from contextlib import contextmanager
 
 from ragger.backend.interface import BackendInterface, RAPDU
 from ragger.bip import pack_derivation_path
+from application_client.eip712 import EIP712FieldType
+from application_client.command_builder import CommandBuilder
 
 
 MAX_APDU_LEN: int = 255
@@ -49,14 +51,17 @@ class Errors(IntEnum):
     SW_BAD_STATE               = 0xB007
     SW_SIGNATURE_FAIL          = 0xB008
 
-
 def split_message(message: bytes, max_size: int) -> List[bytes]:
     return [message[x:x + max_size] for x in range(0, len(message), max_size)]
 
 
 class ConfluxCommandSender:
     def __init__(self, backend: BackendInterface) -> None:
+        self._cmd_builder = CommandBuilder()
         self.backend = backend
+        
+    def _exchange_async(self, payload: bytes):
+        return self.backend.exchange_async_raw(payload)
 
 
     # def get_app_and_version(self) -> RAPDU:
@@ -155,6 +160,41 @@ class ConfluxCommandSender:
                                          p2=P2.P2_LAST,
                                          data=messages[-1]) as response:
             yield response
+            
+    def eip712_send_struct_def_struct_name(self, name: str):
+        return self._exchange_async(self._cmd_builder.eip712_send_struct_def_struct_name(name))
+
+    def eip712_send_struct_def_struct_field(self,
+                                            field_type: EIP712FieldType,
+                                            type_name: str,
+                                            type_size: int,
+                                            array_levels: list,
+                                            key_name: str):
+        return self._exchange_async(self._cmd_builder.eip712_send_struct_def_struct_field(
+                          field_type,
+                          type_name,
+                          type_size,
+                          array_levels,
+                          key_name))
+
+    def eip712_send_struct_impl_root_struct(self, name: str):
+        return self._exchange_async(self._cmd_builder.eip712_send_struct_impl_root_struct(name))
+
+    def eip712_send_struct_impl_array(self, size: int):
+        return self._exchange_async(self._cmd_builder.eip712_send_struct_impl_array(size))
+
+    def eip712_send_struct_impl_struct_field(self, raw_value: bytes):
+        chunks = self._cmd_builder.eip712_send_struct_impl_struct_field(bytearray(raw_value))
+        for chunk in chunks[:-1]:
+            self._exchange(chunk)
+        return self._exchange_async(chunks[-1])
+
+    def eip712_sign_new(self, bip32_path: str):
+        return self._exchange_async(self._cmd_builder.eip712_sign_new(bip32_path))
 
     def get_async_response(self) -> Optional[RAPDU]:
+        return self.backend.last_async_response
+    
+    # alias of get_async_response
+    def response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response

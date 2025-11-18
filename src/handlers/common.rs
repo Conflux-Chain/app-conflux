@@ -1,8 +1,9 @@
-use crate::utils::Bip32Path;
+use crate::bip32_path::Bip32Path;
 use alloc::vec::Vec;
 use ledger_device_sdk::nbgl::NbglHomeAndSettings;
 
-pub struct TxContext {
+// sign context
+pub struct Context {
     pub raw_tx: Vec<u8>,
     pub path: Bip32Path,
     pub review_finished: bool,
@@ -10,10 +11,10 @@ pub struct TxContext {
 }
 
 // Implement constructor for TxInfo with default values
-impl TxContext {
+impl Context {
     // Constructor
-    pub fn new() -> TxContext {
-        TxContext {
+    pub fn new() -> Context {
+        Context {
             raw_tx: Vec::new(),
             path: Default::default(),
             review_finished: false,

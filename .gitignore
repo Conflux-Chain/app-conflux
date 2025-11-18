@@ -23,5 +23,7 @@ ledger/
 # Build directory
 build/
 .vscode
+.idea
 compile.sh
 .DS_Store
+.venv
