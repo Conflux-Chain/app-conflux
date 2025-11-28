@@ -26,6 +26,8 @@ pub struct Eip712Context {
     // used as tmp store of large data which need to send in chunks, normally are string or bytes
     pub field_data: Vec<u8>,
     pub path: Bip32Path,
+    pub domain_reviewed: bool,
+    pub message_reviewed: bool,
 }
 
 impl Eip712Context {
@@ -39,6 +41,8 @@ impl Eip712Context {
             eip712_domain: Default::default(),
             field_data: Default::default(),
             path: Default::default(),
+            domain_reviewed: false,
+            message_reviewed: false,
         }
     }
 
@@ -51,6 +55,8 @@ impl Eip712Context {
         self.eip712_domain = Default::default();
         self.field_data.clear();
         self.path = Default::default();
+        self.domain_reviewed = false;
+        self.message_reviewed = false;
     }
 
     pub fn complete_one_struct_def(&mut self) {
@@ -163,5 +169,23 @@ impl Eip712Context {
         Ok(typed_data
             .eip712_signing_hash()
             .map_err(|_| "signing hash compute failed")?)
+    }
+
+    pub fn message_fields(&self) -> Result<Vec<parser::UIField>, String> {
+        let primary_type = self
+            .current_root_struct
+            .as_ref()
+            .expect("should exist")
+            .clone();
+
+        let type_schema = parser::build_schema(&self.struct_definitions, &primary_type)
+            .map_err(|_| "build schema failed")?;
+
+        let mut data_iter = self
+            .current_struct_field_values
+            .iter()
+            .map(|v| v.value.clone());
+
+        parser::build_ui_fields(&type_schema, &mut data_iter, "")
     }
 }

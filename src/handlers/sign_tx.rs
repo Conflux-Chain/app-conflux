@@ -15,13 +15,11 @@
  *  limitations under the License.
  *****************************************************************************/
 use super::common::Context;
+use super::hash_sign_and_send;
 use crate::app_ui::sign::ui_display_tx;
 use crate::consts::MAX_TRANSACTION_LEN;
-use crate::crypto::decode_der_sig;
 use crate::types::Transaction;
 use crate::AppSW;
-use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
-use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};
 use ledger_device_sdk::io::Comm;
 use rlp_decoder::decode;
 
@@ -64,33 +62,11 @@ pub fn handler_sign_tx(
             // return a "deny" status word.
             if ui_display_tx(&tx, ctx)? {
                 ctx.review_finished = true;
-                compute_tx_signature_and_append(comm, ctx)
+                hash_sign_and_send(comm, &ctx.path, &ctx.raw_tx)
             } else {
                 ctx.review_finished = true;
                 Err(AppSW::Deny)
             }
         }
     }
-}
-
-// compute tx signature and append to comm
-fn compute_tx_signature_and_append(comm: &mut Comm, ctx: &mut Context) -> Result<(), AppSW> {
-    let mut keccak256 = Keccak256::new();
-    let mut message_hash: [u8; 32] = [0u8; 32];
-
-    let _ = keccak256.hash(&ctx.raw_tx, &mut message_hash);
-
-    let (sig, siglen, parity) = Secp256k1::derive_from_path(ctx.path.as_ref())
-        .deterministic_sign(&message_hash)
-        .map_err(|_| AppSW::TxSignFail)?;
-
-    let mut r: [u8; 32] = [0u8; 32];
-    let mut s: [u8; 32] = [0u8; 32];
-
-    decode_der_sig(&sig[..siglen as usize], &mut r, &mut s).map_err(|_| AppSW::TxSignFail)?;
-
-    comm.append(&[parity as u8]);
-    comm.append(&r);
-    comm.append(&s);
-    Ok(())
 }

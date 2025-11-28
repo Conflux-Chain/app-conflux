@@ -12,8 +12,7 @@ k256 = { version = "0.13.4", default-features = false, features = ["ecdsa"] }
 uint = { version = "0.10.0", default-features = false }
 rlp-decoder = { version = "0.1.0", default-features = false }
 bigdecimal = { version = "0.4.9", default-features = false }
-itoa = "1.0"
-ledger-rust-eip712 = { git = "https://github.com/Conflux-Chain/ledger-rust-eip712.git", rev = "683c8058f60e05bd11c6916297280f3c3d627eb2", default-features = false }
+ledger-rust-eip712 = { git = "https://github.com/Conflux-Chain/ledger-rust-eip712.git", rev = "34b510c7dc371b951a1d91d509df106026dfbfd8", default-features = false }
 alloy-primitives = { git = "https://github.com/Conflux-Chain/alloy-rs-core.git", rev = "2a5a324a2c9d33e1cbdb5f694991922e1606ea0f", default-features = false }
 
 # [dev-dependencies]

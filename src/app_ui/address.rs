@@ -15,27 +15,21 @@
  *  limitations under the License.
  *****************************************************************************/
 
+use super::CFX_ICON;
 use crate::cfx_addr::{cfx_addr_encode, Network};
 use crate::consts::ADDRRESS_BYTES_LEN;
 use crate::AppSW;
 
-use include_gif::include_gif;
-use ledger_device_sdk::nbgl::{NbglAddressReview, NbglGlyph};
+use ledger_device_sdk::nbgl::NbglAddressReview;
 
 pub fn ui_display_pk(addr: &[u8], chain_id: u32) -> Result<bool, AppSW> {
     let addr = &addr[addr.len() - ADDRRESS_BYTES_LEN..]; // last 20 bytes
     let network = Network::from_network_id(chain_id as u64);
     let cfx_addr = cfx_addr_encode(addr, network).map_err(|_e| AppSW::AddrDisplayFail)?;
 
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
-    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-    #[cfg(target_os = "apex_p")]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
     // Display the address confirmation screen.
     Ok(NbglAddressReview::new()
-        .glyph(&CFX)
+        .glyph(&CFX_ICON)
         .review_title("Verify CFX address")
         .show(&cfx_addr))
 }

@@ -18,25 +18,14 @@
 #![no_std]
 #![no_main]
 
-mod bip32_path;
-mod app_ui {
-    pub mod address;
-    pub mod menu;
-    pub mod sign;
-}
-mod handlers {
-    pub mod common;
-    pub mod get_public_key;
-    pub mod get_version;
-    pub mod sign_191;
-    pub mod sign_712;
-    pub mod sign_tx;
-}
 mod app_sw;
+mod app_ui;
+mod bip32_path;
 mod cfx_addr;
 mod consts;
 mod crypto;
 mod eip712;
+mod handlers;
 mod ins_consts;
 mod instruction;
 mod types;

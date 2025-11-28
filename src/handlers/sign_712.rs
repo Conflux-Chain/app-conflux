@@ -1,13 +1,13 @@
-use crate::crypto::decode_der_sig;
+use super::sign_and_send;
+use crate::app_ui::eip712::{ui_display_712_domain, ui_display_712_message};
 use crate::eip712::{
-    types::{Eip712FieldDefinition, Eip712FieldValue},
+    types::{Eip712FieldDefinition, Eip712FieldValue, EIP712_DOMAIN_TYPE_NAME},
     Eip712Context,
 };
 use crate::ins_consts::p2_eip712_struct_impl;
 use crate::utils::parse_utf8_string;
 use crate::AppSW;
 use alloc::borrow::ToOwned;
-use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
 use ledger_device_sdk::io::Comm;
 
 pub fn handler_sign_712_struct_definition(
@@ -50,14 +50,23 @@ pub fn handler_sign_712_struct_impl(
             ctx.parse_eip712_domain().map_err(|_| AppSW::InvalidData)?;
 
             let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidData)?;
+
+            // EIP712_DOMAIN_TYPE_NAME must come first
+            if ctx.current_root_struct.is_none() && struct_name.as_str() != EIP712_DOMAIN_TYPE_NAME
+            {
+                return Err(AppSW::InvalidData);
+            }
+
             ctx.current_root_struct = Some(struct_name);
         }
         p2_eip712_struct_impl::ARRAY => {
             if data.len() != 1 {
                 return Err(AppSW::InvalidData);
             }
-            ctx.current_struct_field_values
-                .push(Eip712FieldValue::from_bytes(data.to_owned()));
+            ctx.current_struct_field_values.push(Eip712FieldValue {
+                value: data.to_owned(),
+                is_array_size: true,
+            });
         }
         p2_eip712_struct_impl::STRUCT_FIELD => {
             if data.len() <= 2 {
@@ -82,30 +91,26 @@ pub fn handler_sign_712_struct_impl(
 }
 
 pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), AppSW> {
-    // retrive bip path
+    // retrieve bip path
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
     ctx.path = data.try_into()?;
+
+    ctx.domain_reviewed = ui_display_712_domain(ctx)?;
+    ctx.message_reviewed = ui_display_712_message(ctx)?;
+
+    if !ctx.domain_reviewed || !ctx.message_reviewed {
+        return Err(AppSW::TxDisplayFail);
+    }
 
     // compute 712 message hash
     let message_hash = ctx
         .eip712_signing_hash()
         .map_err(|_| AppSW::WrongApduLength)?;
 
-    let (sig, siglen, parity) = Secp256k1::derive_from_path(ctx.path.as_ref())
-        .deterministic_sign(message_hash.as_slice())
-        .map_err(|_| AppSW::TxSignFail)?;
+    let res = sign_and_send(comm, &ctx.path, message_hash.as_slice())?;
 
-    let mut r: [u8; 32] = [0u8; 32];
-    let mut s: [u8; 32] = [0u8; 32];
-
-    decode_der_sig(&sig[..siglen as usize], &mut r, &mut s).map_err(|_| AppSW::TxSignFail)?;
-
-    comm.append(&[parity as u8]);
-    comm.append(&r);
-    comm.append(&s);
-
-    // reset context
+    // reset the context
     ctx.reset();
 
-    Ok(())
+    Ok(res)
 }

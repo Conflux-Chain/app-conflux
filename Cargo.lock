@@ -264,7 +264,6 @@ dependencies = [
  "alloy-primitives",
  "bigdecimal",
  "include_gif",
- "itoa",
  "k256",
  "ledger-rust-eip712",
  "ledger_device_sdk",
@@ -712,7 +711,7 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 [[package]]
 name = "ledger-rust-eip712"
 version = "0.1.0"
-source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=683c8058f60e05bd11c6916297280f3c3d627eb2#683c8058f60e05bd11c6916297280f3c3d627eb2"
+source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=34b510c7dc371b951a1d91d509df106026dfbfd8#34b510c7dc371b951a1d91d509df106026dfbfd8"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-primitives",
