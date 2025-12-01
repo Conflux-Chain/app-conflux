@@ -131,7 +131,7 @@ pub fn ui_display_191_message(ctx: &Context) -> Result<bool, AppSW> {
     }];
 
     let review: NbglReview = NbglReview::new()
-        .titles("Review Message", "", "Sign Message")
+        .titles("Review Message", "This is a Eip191 message", "Sign Message")
         .glyph(&CFX_ICON);
 
     Ok(review.show(&my_fields))

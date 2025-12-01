@@ -1,5 +1,5 @@
 use super::sign_and_send;
-use crate::app_ui::eip712::{ui_display_712_domain, ui_display_712_message};
+use crate::app_ui::eip712::ui_display_712_message;
 use crate::eip712::{
     types::{Eip712FieldDefinition, Eip712FieldValue, EIP712_DOMAIN_TYPE_NAME},
     Eip712Context,
@@ -18,7 +18,11 @@ pub fn handler_sign_712_struct_definition(
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
 
     if is_struct_name {
-        ctx.complete_one_struct_def();
+        if ctx.current_struct_name.is_none() {
+            ctx.reset();
+        } else {
+            ctx.complete_one_struct_def();
+        }
         // decode struct name
         let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidData)?;
         ctx.current_struct_name = Some(struct_name);
@@ -47,21 +51,21 @@ pub fn handler_sign_712_struct_impl(
     match data_type {
         p2_eip712_struct_impl::ROOT_STRUCT => {
             ctx.complete_one_struct_def();
-            ctx.parse_eip712_domain().map_err(|_| AppSW::InvalidData)?;
 
-            let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidData)?;
+            let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidString)?;
 
             // EIP712_DOMAIN_TYPE_NAME must come first
             if ctx.current_root_struct.is_none() && struct_name.as_str() != EIP712_DOMAIN_TYPE_NAME
             {
                 return Err(AppSW::InvalidData);
             }
+            ctx.parse_eip712_domain().map_err(|_| AppSW::InvalidData)?;
 
             ctx.current_root_struct = Some(struct_name);
         }
         p2_eip712_struct_impl::ARRAY => {
             if data.len() != 1 {
-                return Err(AppSW::InvalidData);
+                return Err(AppSW::WrongDataLength);
             }
             ctx.current_struct_field_values.push(Eip712FieldValue {
                 value: data.to_owned(),
@@ -70,7 +74,7 @@ pub fn handler_sign_712_struct_impl(
         }
         p2_eip712_struct_impl::STRUCT_FIELD => {
             if data.len() <= 2 {
-                return Err(AppSW::InvalidData);
+                return Err(AppSW::WrongDataLength);
             }
             let bytes = [data[0], data[1]];
             let size = u16::from_be_bytes(bytes) as usize;
@@ -84,7 +88,7 @@ pub fn handler_sign_712_struct_impl(
         }
         _ => {
             // should not happen
-            return Err(AppSW::InvalidData);
+            return Err(AppSW::InternalError);
         }
     }
     Ok(())
@@ -95,17 +99,17 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
     ctx.path = data.try_into()?;
 
-    ctx.domain_reviewed = ui_display_712_domain(ctx)?;
-    ctx.message_reviewed = ui_display_712_message(ctx)?;
+    let message_reviewed = ui_display_712_message(ctx)?;
 
-    if !ctx.domain_reviewed || !ctx.message_reviewed {
-        return Err(AppSW::TxDisplayFail);
+    if !message_reviewed {
+        ctx.reset();
+        return Err(AppSW::Deny);
     }
 
     // compute 712 message hash
     let message_hash = ctx
         .eip712_signing_hash()
-        .map_err(|_| AppSW::WrongApduLength)?;
+        .map_err(|_| AppSW::InternalError)?;
 
     let res = sign_and_send(comm, &ctx.path, message_hash.as_slice())?;
 

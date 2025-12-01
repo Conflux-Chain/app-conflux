@@ -34,15 +34,14 @@ pub fn handler_sign_191(
             Ok(())
         // Otherwise, try to parse the transaction
         } else {
+            ctx.review_finished = true;
             // Display 191 message. If user approves
             // the message, sign it. Otherwise,
             // return a "deny" status word.
             if ui_display_191_message(ctx)? {
-                ctx.review_finished = true;
                 let raw_data = eip191_message(&ctx.raw_tx);
                 hash_sign_and_send(comm, &ctx.path, &raw_data)
             } else {
-                ctx.review_finished = true;
                 Err(AppSW::Deny)
             }
         }

@@ -60,11 +60,10 @@ pub fn handler_sign_tx(
             // Display transaction. If user approves
             // the transaction, sign it. Otherwise,
             // return a "deny" status word.
+            ctx.review_finished = true;
             if ui_display_tx(&tx, ctx)? {
-                ctx.review_finished = true;
                 hash_sign_and_send(comm, &ctx.path, &ctx.raw_tx)
             } else {
-                ctx.review_finished = true;
                 Err(AppSW::Deny)
             }
         }

@@ -92,7 +92,7 @@ impl TryFrom<ApduHeader> for Instruction {
                 | p2_eip712_struct_impl::ARRAY
                 | p2_eip712_struct_impl::STRUCT_FIELD,
             ) => Ok(Instruction::Eip712StructImplementation {
-                more: value.p1 == p1_eip712_struct_impl::COMPLETE_SEND,
+                more: value.p1 == p1_eip712_struct_impl::PARTIAL_SEND,
                 data_type: value.p2,
             }),
 

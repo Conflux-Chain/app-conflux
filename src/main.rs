@@ -73,6 +73,7 @@ fn show_status_and_home_if_needed(ins: &Instruction, tx_ctx: &mut Context, statu
         (Instruction::Sign191 { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
             (true, StatusType::Message)
         }
+        (Instruction::Sign712 { .. }, AppSW::Deny | AppSW::Ok) => (true, StatusType::Message),
         (_, _) => (false, StatusType::Address),
     };
 
@@ -104,7 +105,7 @@ extern "C" fn sample_main() {
     loop {
         let ins: Instruction = comm.next_command();
 
-        let _status = match handle_apdu(&mut comm, &ins, &mut tx_ctx, &mut eip712_ctx) {
+        let status = match handle_apdu(&mut comm, &ins, &mut tx_ctx, &mut eip712_ctx) {
             Ok(()) => {
                 comm.reply_ok();
                 AppSW::Ok
@@ -114,7 +115,7 @@ extern "C" fn sample_main() {
                 sw
             }
         };
-        show_status_and_home_if_needed(&ins, &mut tx_ctx, &_status);
+        show_status_and_home_if_needed(&ins, &mut tx_ctx, &status);
     }
 }
 

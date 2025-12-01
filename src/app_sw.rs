@@ -22,6 +22,7 @@ pub enum AppSW {
     Ok = 0x9000,
     //
     InvalidData = 0x6A80,
+    InvalidString = 0x6A81,
     WrongDataLength = 0x6A87,
     WrongResponseLength = 0xB000,
     InternalError = 0x6F01,
