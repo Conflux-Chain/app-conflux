@@ -14,12 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use super::CFX_ICON;
-use crate::cfx_addr::{cfx_addr_encode, Network};
-use crate::handlers::common::Context;
-use crate::settings::Settings;
-use crate::types::{Transaction, U256};
-use crate::AppSW;
+use crate::{
+    app_ui::CFX_ICON,
+    cfx_addr::{cfx_addr_encode, Network},
+    handlers::common::Context,
+    settings::Settings,
+    types::{Transaction, U256},
+    AppSW,
+};
 
 use alloc::{format, vec};
 use alloy_primitives::hex;

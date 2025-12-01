@@ -1,7 +1,9 @@
-use crate::app_sw::AppSW;
-use crate::ins_consts::{
-    ins, p1_eip712_struct_impl, p1_sign_tx, p2_eip712_struct_def, p2_eip712_struct_impl,
-    p2_sign_eip712, p2_sign_tx,
+use crate::{
+    ins_consts::{
+        ins, p1_eip712_struct_impl, p1_sign_tx, p2_eip712_struct_def, p2_eip712_struct_impl,
+        p2_sign_eip712, p2_sign_tx,
+    },
+    AppSW,
 };
 use ledger_device_sdk::io::ApduHeader;
 

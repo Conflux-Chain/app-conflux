@@ -1,10 +1,10 @@
-use crate::bip32_path::Bip32Path;
-use crate::crypto::decode_der_sig;
-use crate::AppSW;
+use crate::{bip32_path::Bip32Path, crypto::decode_der_sig, AppSW};
 use alloc::vec::Vec;
-use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
-use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};
-use ledger_device_sdk::io::Comm;
+use ledger_device_sdk::{
+    ecc::{Secp256k1, SeedDerive},
+    hash::{sha3::Keccak256, HashInit},
+    io::Comm,
+};
 
 pub mod common;
 pub mod get_public_key;

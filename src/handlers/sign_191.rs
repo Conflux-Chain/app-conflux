@@ -1,8 +1,9 @@
-use super::common::Context;
-use crate::app_ui::sign::ui_display_191_message;
+use crate::{
+    app_ui::sign::ui_display_191_message,
+    handlers::{common::Context, hash_sign_and_send},
+    AppSW,
+};
 // use crate::consts::EIP191_PREFIX;
-use super::hash_sign_and_send;
-use crate::AppSW;
 // use alloc::vec::Vec;
 use alloy_primitives::utils::eip191_message;
 use ledger_device_sdk::io::Comm;

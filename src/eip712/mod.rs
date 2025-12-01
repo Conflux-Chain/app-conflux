@@ -1,6 +1,5 @@
 #![allow(unused)]
 
-use crate::bip32_path::Bip32Path;
 use crate::AppSW;
 use alloc::{
     format,
@@ -8,8 +7,8 @@ use alloc::{
     vec::Vec,
 };
 use alloy_primitives::{Address, B256, U256};
-pub use ledger_rust_eip712::types;
 use ledger_rust_eip712::{parser, Eip712Domain, Eip712Types, Resolver, TypedData};
+pub use ledger_rust_eip712::{types, utils};
 use types::{
     build_resolver_from_struct_defs, Eip712FieldDefinition, Eip712FieldValue,
     Eip712StructDefinitions, Eip712StructImplementation, EIP712_DOMAIN_TYPE_NAME,
@@ -26,7 +25,6 @@ pub struct Eip712Context {
     pub eip712_domain: Eip712Domain,
     // used as tmp store of large data which need to send in chunks, normally are string or bytes
     pub field_data: Vec<u8>,
-    pub path: Bip32Path,
 }
 
 impl Eip712Context {
@@ -39,7 +37,6 @@ impl Eip712Context {
             current_struct_field_values: Vec::new(),
             eip712_domain: Default::default(),
             field_data: Default::default(),
-            path: Default::default(),
         }
     }
 
@@ -51,7 +48,6 @@ impl Eip712Context {
         self.current_struct_field_values.clear();
         self.eip712_domain = Default::default();
         self.field_data.clear();
-        self.path = Default::default();
     }
 
     pub fn complete_one_struct_def(&mut self) {

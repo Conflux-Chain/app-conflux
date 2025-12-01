@@ -1,6 +1,6 @@
 #![allow(unused_assignments)]
-use super::CFX_ICON;
 use crate::{
+    app_ui::CFX_ICON,
     eip712::{types::EIP712_DOMAIN_TYPE_NAME, Eip712Context},
     AppSW,
 };
@@ -103,8 +103,8 @@ pub fn ui_display_712_message(ctx: &Eip712Context) -> Result<bool, AppSW> {
     let review: NbglReview = NbglReview::new()
         .titles(
             "Review Typed Message",
-            "blid Signing required",
-            "Access risk and sign typed message",
+            "Blind signing required",
+            "Accept risk and sign typed message?",
         )
         .glyph(&CFX_ICON);
 

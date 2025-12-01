@@ -1,9 +1,7 @@
 use crate::consts::{ADDRRESS_BYTES_LEN, EXPONENT_SMALLEST_UNIT, HASH_BYTES_LEN};
 use alloc::string::{String, ToString};
 use bigdecimal::{BigDecimal, FromPrimitive};
-use core::cmp::Ordering;
-use core::ops::Deref;
-use core::str::FromStr;
+use core::{cmp::Ordering, ops::Deref, str::FromStr};
 use rlp_decoder::{Decodable, DecoderError, Rlp};
 use uint::construct_uint;
 

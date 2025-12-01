@@ -15,10 +15,12 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use super::CFX_ICON;
-use crate::cfx_addr::{cfx_addr_encode, Network};
-use crate::consts::ADDRRESS_BYTES_LEN;
-use crate::AppSW;
+use crate::{
+    app_ui::CFX_ICON,
+    cfx_addr::{cfx_addr_encode, Network},
+    consts::ADDRRESS_BYTES_LEN,
+    AppSW,
+};
 
 use ledger_device_sdk::nbgl::NbglAddressReview;
 

@@ -18,6 +18,9 @@
 #![no_std]
 #![no_main]
 
+// Required for using String, Vec, format!...
+extern crate alloc;
+
 mod app_sw;
 mod app_ui;
 mod bip32_path;
@@ -51,12 +54,8 @@ use ledger_device_sdk::{
     io::Comm,
     nbgl::{init_comm, NbglReviewStatus, StatusType},
 };
-use ledger_rust_eip712::utils;
 
 ledger_device_sdk::set_panic!(ledger_device_sdk::exiting_panic);
-
-// Required for using String, Vec, format!...
-extern crate alloc;
 
 fn show_status_and_home_if_needed(ins: &Instruction, tx_ctx: &mut Context, status: &AppSW) {
     let (show_status, status_type) = match (ins, status) {

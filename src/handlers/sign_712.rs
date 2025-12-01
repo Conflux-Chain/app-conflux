@@ -1,12 +1,15 @@
-use super::sign_and_send;
-use crate::app_ui::eip712::ui_display_712_message;
-use crate::eip712::{
-    types::{Eip712FieldDefinition, Eip712FieldValue, EIP712_DOMAIN_TYPE_NAME},
-    Eip712Context,
+use crate::{
+    app_ui::eip712::ui_display_712_message,
+    bip32_path::Bip32Path,
+    eip712::{
+        types::{Eip712FieldDefinition, Eip712FieldValue, EIP712_DOMAIN_TYPE_NAME},
+        utils::parse_utf8_string,
+        Eip712Context,
+    },
+    handlers::sign_and_send,
+    ins_consts::p2_eip712_struct_impl,
+    AppSW,
 };
-use crate::ins_consts::p2_eip712_struct_impl;
-use crate::utils::parse_utf8_string;
-use crate::AppSW;
 use alloc::borrow::ToOwned;
 use ledger_device_sdk::io::Comm;
 
@@ -97,7 +100,7 @@ pub fn handler_sign_712_struct_impl(
 pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), AppSW> {
     // retrieve bip path
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
-    ctx.path = data.try_into()?;
+    let path: Bip32Path = data.try_into()?;
 
     let message_reviewed = ui_display_712_message(ctx)?;
 
@@ -111,7 +114,7 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
         .eip712_signing_hash()
         .map_err(|_| AppSW::InternalError)?;
 
-    let res = sign_and_send(comm, &ctx.path, message_hash.as_slice())?;
+    let res = sign_and_send(comm, &path, message_hash.as_slice())?;
 
     // reset the context
     ctx.reset();

@@ -14,12 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use super::common::Context;
-use super::hash_sign_and_send;
-use crate::app_ui::sign::ui_display_tx;
-use crate::consts::MAX_TRANSACTION_LEN;
-use crate::types::Transaction;
-use crate::AppSW;
+use crate::{
+    app_ui::sign::ui_display_tx,
+    consts::MAX_TRANSACTION_LEN,
+    handlers::{common::Context, hash_sign_and_send},
+    types::Transaction,
+    AppSW,
+};
 use ledger_device_sdk::io::Comm;
 use rlp_decoder::decode;
 

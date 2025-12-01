@@ -14,10 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use super::CFX_ICON;
-use crate::settings::Settings;
-use ledger_device_sdk::io::Comm;
-use ledger_device_sdk::nbgl::NbglHomeAndSettings;
+use crate::{app_ui::CFX_ICON, settings::Settings};
+use ledger_device_sdk::{io::Comm, nbgl::NbglHomeAndSettings};
 
 pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
     let settings_strings = [
