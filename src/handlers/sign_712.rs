@@ -119,12 +119,7 @@ pub fn handler_sign_712_struct_impl(
 }
 
 pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), AppSW> {
-    // retrieve bip path
-    let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
-    let path: Bip32Path = data.try_into()?;
-
     let message_reviewed = ui_display_712_message(ctx)?;
-
     if !message_reviewed {
         ctx.reset();
         return Err(AppSW::Deny);
@@ -143,6 +138,10 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
     // reset the context
     ctx.reset();
 
+    // retrieve bip path
+    let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
+    let path: Bip32Path = data.try_into()?;
+    // sign
     let res = sign_and_send(comm, &path, message_hash.as_slice())?;
 
     Ok(res)

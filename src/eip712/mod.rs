@@ -17,6 +17,7 @@ use types::{
 pub struct Eip712Context {
     pub current_struct_name: Option<String>,
     pub current_struct_fields: Vec<Eip712FieldDefinition>,
+
     pub struct_definitions: Eip712StructDefinitions,
 
     pub current_root_struct: Option<String>,
@@ -101,28 +102,26 @@ impl Eip712Context {
             || self.eip712_domain.salt.is_some()
     }
 
-    pub fn eip712_signing_hash(&self) -> Result<B256, &str> {
+    pub fn eip712_signing_hash(&mut self) -> Result<B256, &str> {
         if !self.is_eip712_domain_set_up() {
             return Err("no domain data");
         }
         if self.current_root_struct.is_none() {
             return Err("no primary type");
         }
-        let primary_type = self
-            .current_root_struct
-            .as_ref()
-            .expect("should exist")
-            .clone();
+        let primary_type = self.current_root_struct.take().unwrap();
 
         let resolver = build_resolver_from_struct_defs(&self.struct_definitions)?;
 
         let type_schema = parser::build_schema(&self.struct_definitions, &primary_type)
             .map_err(|_| "build schema failed")?;
 
-        let mut data_iter = self
-            .current_struct_field_values
-            .iter()
-            .map(|v| v.value.clone());
+        // clear struct definitions to save memory
+        self.struct_definitions.clear();
+
+        let field_values: Vec<_> = self.current_struct_field_values.drain(..).collect();
+        let mut data_iter = field_values.into_iter().map(|v| v.value);
+
         let value =
             parser::build_value(&type_schema, &mut data_iter).map_err(|_| "invalid data")?;
 
@@ -132,6 +131,9 @@ impl Eip712Context {
             primary_type,
             message: value,
         };
+
+        // clear domain to save memory
+        self.eip712_domain = Default::default();
 
         Ok(typed_data
             .eip712_signing_hash()
