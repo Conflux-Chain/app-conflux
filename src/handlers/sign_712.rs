@@ -76,17 +76,38 @@ pub fn handler_sign_712_struct_impl(
             });
         }
         p2_eip712_struct_impl::STRUCT_FIELD => {
-            if data.len() <= 2 {
-                return Err(AppSW::WrongDataLength);
+            if ctx.rest_len_to_read == 0 {
+                if data.len() < 2 {
+                    return Err(AppSW::WrongDataLength);
+                }
+                let len_bytes = [data[0], data[1]];
+                let total_size = u16::from_be_bytes(len_bytes) as usize;
+                let curr_data_size = data.len() - 2;
+                let size_to_copy = if total_size > curr_data_size {
+                    curr_data_size
+                } else {
+                    total_size
+                };
+                let field_value = &data[2..2 + size_to_copy];
+                ctx.field_data.extend_from_slice(field_value);
+                if size_to_copy < total_size {
+                    ctx.rest_len_to_read = total_size - size_to_copy;
+                }
+            } else {
+                let curr_data_size = data.len();
+                if ctx.rest_len_to_read < curr_data_size {
+                    return Err(AppSW::WrongDataLength);
+                }
+                ctx.field_data.extend_from_slice(data);
+                ctx.rest_len_to_read -= curr_data_size;
             }
-            let bytes = [data[0], data[1]];
-            let size = u16::from_be_bytes(bytes) as usize;
-            let field_value = &data[2..2 + size];
-            ctx.field_data.extend_from_slice(field_value);
+
             if !more {
+                // ctx.rest_len_to_read should be zero here
                 ctx.current_struct_field_values
                     .push(Eip712FieldValue::from_bytes(ctx.field_data.to_owned()));
                 ctx.field_data.clear();
+                ctx.rest_len_to_read = 0;
             }
         }
         _ => {
@@ -110,14 +131,19 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
     }
 
     // compute 712 message hash
-    let message_hash = ctx
-        .eip712_signing_hash()
-        .map_err(|_| AppSW::InternalError)?;
-
-    let res = sign_and_send(comm, &path, message_hash.as_slice())?;
+    let message_hash = ctx.eip712_signing_hash();
+    let message_hash = match message_hash {
+        Ok(h) => h,
+        Err(err_msg) => {
+            comm.append(err_msg.as_bytes());
+            return Err(AppSW::Deny);
+        }
+    };
 
     // reset the context
     ctx.reset();
+
+    let res = sign_and_send(comm, &path, message_hash.as_slice())?;
 
     Ok(res)
 }

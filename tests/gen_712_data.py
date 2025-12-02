@@ -1,9 +1,25 @@
 from application_client.eip712.InputData import process_data
 from application_client.mock_client import EthAppClient
+import os
+import fnmatch
+import json
 
 app_client = EthAppClient()
 
-data = {
+def eip712_json_path() -> str:
+    return f"{os.path.dirname(__file__)}/eip712_input_files"
+
+
+def input_files() -> list[str]:
+    files = []
+    for file in os.scandir(eip712_json_path()):
+        if fnmatch.fnmatch(file, "*-data.json"):
+            files.append(file.path)
+    return sorted(files)
+
+data = json.load(open("./tests/eip712_input_files/05-signed_ints-data.json"))
+
+""" data = {
     "domain": {
         "chainId": 1,
         "name": "Simple Mail",
@@ -52,7 +68,7 @@ data = {
             { "name": "wallets", "type": "address[]" }
         ]
     }
-}
+} """
 
 
 process_data(app_client, data)

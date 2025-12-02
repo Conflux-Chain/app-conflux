@@ -25,6 +25,7 @@ pub struct Eip712Context {
     pub eip712_domain: Eip712Domain,
     // used as tmp store of large data which need to send in chunks, normally are string or bytes
     pub field_data: Vec<u8>,
+    pub rest_len_to_read: usize,
 }
 
 impl Eip712Context {
@@ -37,6 +38,7 @@ impl Eip712Context {
             current_struct_field_values: Vec::new(),
             eip712_domain: Default::default(),
             field_data: Default::default(),
+            rest_len_to_read: 0,
         }
     }
 
@@ -48,6 +50,7 @@ impl Eip712Context {
         self.current_struct_field_values.clear();
         self.eip712_domain = Default::default();
         self.field_data.clear();
+        self.rest_len_to_read = 0;
     }
 
     pub fn complete_one_struct_def(&mut self) {
