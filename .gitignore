@@ -27,3 +27,4 @@ build/
 compile.sh
 .DS_Store
 .venv
+docs/eip712.md
