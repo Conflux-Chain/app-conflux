@@ -7,7 +7,9 @@ use alloc::{
     vec::Vec,
 };
 use alloy_primitives::{Address, B256, U256};
-use ledger_rust_eip712::{parser, Eip712Domain, Eip712Types, Resolver, TypedData};
+use ledger_rust_eip712::{
+    eip712::eip712_signing_hash, parser, Eip712Domain, Eip712Types, Resolver, TypedData,
+};
 pub use ledger_rust_eip712::{types, utils};
 use types::{
     build_resolver_from_struct_defs, Eip712FieldDefinition, Eip712FieldValue,
@@ -140,21 +142,24 @@ impl Eip712Context {
             .map_err(|_| "signing hash compute failed")?)
     }
 
-    pub fn message_fields(&self) -> Result<Vec<parser::UIField>, String> {
-        let primary_type = self
-            .current_root_struct
-            .as_ref()
-            .expect("should exist")
-            .clone();
+    //
+    pub fn custom_eip712_signing_hash(&mut self) -> Result<B256, &str> {
+        if !self.is_eip712_domain_set_up() {
+            return Err("no domain data");
+        }
+        if self.current_root_struct.is_none() {
+            return Err("no primary type");
+        }
+        let primary_type = self.current_root_struct.take().unwrap();
+        let field_values: Vec<_> = self.current_struct_field_values.drain(..).collect();
+        let mut data_iter = field_values.into_iter().map(|v| v.value);
 
-        let type_schema = parser::build_schema(&self.struct_definitions, &primary_type)
-            .map_err(|_| "build schema failed")?;
-
-        let mut data_iter = self
-            .current_struct_field_values
-            .iter()
-            .map(|v| v.value.clone());
-
-        parser::build_ui_fields(&type_schema, &mut data_iter, "")
+        eip712_signing_hash(
+            &self.struct_definitions,
+            &mut data_iter,
+            &primary_type,
+            &self.eip712_domain,
+        )
+        .map_err(|_| "compute eip712 hash failed")
     }
 }

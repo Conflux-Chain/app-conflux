@@ -126,7 +126,7 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
     }
 
     // compute 712 message hash
-    let message_hash = ctx.eip712_signing_hash();
+    let message_hash = ctx.custom_eip712_signing_hash();
     let message_hash = match message_hash {
         Ok(h) => h,
         Err(err_msg) => {
