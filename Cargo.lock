@@ -710,7 +710,7 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 [[package]]
 name = "ledger-rust-eip712"
 version = "0.1.0"
-source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=3fd5b717e66d100ad5cc404c6029504f433a84bc#3fd5b717e66d100ad5cc404c6029504f433a84bc"
+source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=548bbdb3e684e6d14e7aebfd0c92c4d839490f02#548bbdb3e684e6d14e7aebfd0c92c4d839490f02"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-primitives",
