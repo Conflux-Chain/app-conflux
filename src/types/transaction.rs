@@ -145,8 +145,8 @@ impl Decodable for Transaction {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloy_primitives::hex::{FromHex, ToHex};
     use rlp::{decode, encode};
-    use rustc_hex::{FromHex, ToHex};
 
     #[test]
     fn decode_basic() {

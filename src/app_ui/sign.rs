@@ -14,15 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use crate::cfx_addr::{cfx_addr_encode, Network};
-use crate::handlers::common::TxContext;
-use crate::settings::Settings;
-use crate::types::{Transaction, U256};
-use crate::AppSW;
+use crate::{
+    app_ui::CFX_ICON,
+    cfx_addr::{cfx_addr_encode, Network},
+    handlers::common::Context,
+    settings::Settings,
+    types::{Transaction, U256},
+    AppSW,
+};
 
 use alloc::{format, vec};
-use include_gif::include_gif;
-use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageIndex};
+use alloy_primitives::hex;
+use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglReview, PageIndex};
 
 /// Displays a transaction and returns true if user approved it.
 ///
@@ -32,7 +35,7 @@ use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglGlyph, NbglReview, PageInde
 ///
 /// * `tx` - Transaction to be displayed for validation
 #[allow(unused_variables)]
-pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppSW> {
+pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW> {
     let fully_decoded = tx.fully_decoded();
 
     let value_str = tx.value.cfx_str().ok_or(AppSW::TxDisplayFail)?;
@@ -97,12 +100,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     } else {
         ctx.home.set_start_page(PageIndex::Home);
     }
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
-    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-    #[cfg(target_os = "apex_p")]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
+
     // Create NBGL review. Maximum number of fields and string buffer length can be customised
     // with constant generic parameters of NbglReview. Default values are 32 and 1024 respectively.
     let mut review: NbglReview = NbglReview::new()
@@ -111,7 +109,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
             "",
             "Sign transaction\nto send CFX",
         )
-        .glyph(&CFX);
+        .glyph(&CFX_ICON);
 
     if !fully_decoded {
         review = review.blind();
@@ -126,7 +124,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut TxContext) -> Result<bool, AppS
     }
 }
 
-pub fn ui_display_191_message(ctx: &mut TxContext) -> Result<bool, AppSW> {
+pub fn ui_display_191_message(ctx: &Context) -> Result<bool, AppSW> {
     let msg = core::str::from_utf8(&ctx.raw_tx).map_err(|_| AppSW::TxDisplayFail)?;
 
     let my_fields = vec![Field {
@@ -134,16 +132,13 @@ pub fn ui_display_191_message(ctx: &mut TxContext) -> Result<bool, AppSW> {
         value: msg,
     }];
 
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
-    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-    #[cfg(target_os = "apex_p")]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
-
     let review: NbglReview = NbglReview::new()
-        .titles("Review Message", "", "Sign Message")
-        .glyph(&CFX);
+        .titles(
+            "Review message",
+            "This is a personal message",
+            "Sign message",
+        )
+        .glyph(&CFX_ICON);
 
     Ok(review.show(&my_fields))
 }

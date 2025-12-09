@@ -1,6 +1,5 @@
 use crate::AppSW;
-use ledger_device_sdk::nvm::*;
-use ledger_device_sdk::NVMData;
+use ledger_device_sdk::{nvm::*, NVMData};
 
 // This is necessary to store the object in NVM and not in RAM
 const SETTINGS_SIZE: usize = 10;

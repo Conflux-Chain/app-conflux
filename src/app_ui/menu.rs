@@ -14,20 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *****************************************************************************/
-use include_gif::include_gif;
-use ledger_device_sdk::io::Comm;
-
-use crate::settings::Settings;
-use ledger_device_sdk::nbgl::{NbglGlyph, NbglHomeAndSettings};
+use crate::{app_ui::CFX_ICON, settings::Settings};
+use ledger_device_sdk::{io::Comm, nbgl::NbglHomeAndSettings};
 
 pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
-    #[cfg(any(target_os = "stax", target_os = "flex"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_64.gif", NBGL));
-    #[cfg(any(target_os = "nanosplus", target_os = "nanox"))]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_14.gif", NBGL));
-    #[cfg(target_os = "apex_p")]
-    const CFX: NbglGlyph = NbglGlyph::from_include(include_gif!("icons/cfx_48.png", NBGL));
-
     let settings_strings = [
         ["Blind Signing", "Enable transaction blind signing."],
         ["Display Data", "Allow display of transaction data."],
@@ -36,7 +26,7 @@ pub fn ui_menu_main(_: &mut Comm) -> NbglHomeAndSettings {
 
     // Display the home screen.
     NbglHomeAndSettings::new()
-        .glyph(&CFX)
+        .glyph(&CFX_ICON)
         .infos(
             "Conflux",
             env!("CARGO_PKG_VERSION"),

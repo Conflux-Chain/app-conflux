@@ -15,13 +15,17 @@
  *  limitations under the License.
  *****************************************************************************/
 
-use crate::app_ui::address::ui_display_pk;
-use crate::consts::{ADDRRESS_BYTES_LEN, HASH_BYTES_LEN};
-use crate::utils::Bip32Path;
-use crate::AppSW;
-use ledger_device_sdk::ecc::{Secp256k1, SeedDerive};
-use ledger_device_sdk::hash::{sha3::Keccak256, HashInit};
-use ledger_device_sdk::io::Comm;
+use crate::{
+    app_ui::address::ui_display_pk,
+    bip32_path::Bip32Path,
+    consts::{ADDRRESS_BYTES_LEN, HASH_BYTES_LEN},
+    AppSW,
+};
+use ledger_device_sdk::{
+    ecc::{Secp256k1, SeedDerive},
+    hash::{sha3::Keccak256, HashInit},
+    io::Comm,
+};
 
 pub fn handler_get_public_key(
     comm: &mut Comm,
