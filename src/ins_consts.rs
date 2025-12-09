@@ -38,7 +38,7 @@ pub mod p2_sign_tx {
     pub const P2_SIGN_TX_MORE: u8 = 0x80;
 }
 
-/// P1 parameter constants for SIGN ETH EIP 712
+// P1 parameter constants for SIGN ETH EIP 712
 // pub mod p1_sign_eip712 {
 //     /// First chunk
 //     pub const FIRST_CHUNK: u8 = 0x00;

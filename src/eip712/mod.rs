@@ -71,7 +71,7 @@ impl Eip712Context {
         }
         let field_defs = self
             .struct_definitions
-            .get(&EIP712_DOMAIN_TYPE_NAME.to_string())
+            .get(EIP712_DOMAIN_TYPE_NAME)
             .ok_or("field defs not found")?;
 
         // If we already have a struct name and fields, we should finalize the previous struct
@@ -137,9 +137,9 @@ impl Eip712Context {
         // clear domain to save memory
         self.eip712_domain = Default::default();
 
-        Ok(typed_data
+        typed_data
             .eip712_signing_hash()
-            .map_err(|_| "signing hash compute failed")?)
+            .map_err(|_| "signing hash compute failed")
     }
 
     //

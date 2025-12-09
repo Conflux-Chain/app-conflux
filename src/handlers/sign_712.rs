@@ -36,7 +36,7 @@ pub fn handler_sign_712_struct_definition(
         }
 
         let field_definition =
-            Eip712FieldDefinition::from_bytes(&data).map_err(|_| AppSW::InvalidData)?;
+            Eip712FieldDefinition::from_bytes(data).map_err(|_| AppSW::InvalidData)?;
         ctx.current_struct_fields.push(field_definition);
     }
 
@@ -142,7 +142,7 @@ pub fn handler_sign_712(comm: &mut Comm, ctx: &mut Eip712Context) -> Result<(), 
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
     let path: Bip32Path = data.try_into()?;
     // sign
-    let res = sign_and_send(comm, &path, message_hash.as_slice())?;
+    sign_and_send(comm, &path, message_hash.as_slice())?;
 
-    Ok(res)
+    Ok(())
 }

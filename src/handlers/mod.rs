@@ -1,5 +1,4 @@
 use crate::{bip32_path::Bip32Path, crypto::decode_der_sig, AppSW};
-use alloc::vec::Vec;
 use ledger_device_sdk::{
     ecc::{Secp256k1, SeedDerive},
     hash::{sha3::Keccak256, HashInit},
@@ -14,14 +13,10 @@ pub mod sign_712;
 pub mod sign_tx;
 
 // compute hash, sign, and write sig to common
-pub fn hash_sign_and_send(
-    comm: &mut Comm,
-    path: &Bip32Path,
-    raw_data: &Vec<u8>,
-) -> Result<(), AppSW> {
+pub fn hash_sign_and_send(comm: &mut Comm, path: &Bip32Path, raw_data: &[u8]) -> Result<(), AppSW> {
     let mut keccak256 = Keccak256::new();
     let mut message_hash: [u8; 32] = [0u8; 32];
-    let _ = keccak256.hash(&raw_data, &mut message_hash);
+    let _ = keccak256.hash(raw_data, &mut message_hash);
 
     sign_and_send(comm, path, &message_hash)
 }
