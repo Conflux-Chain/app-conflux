@@ -6,18 +6,7 @@ import json
 
 app_client = EthAppClient()
 
-def eip712_json_path() -> str:
-    return f"{os.path.dirname(__file__)}/eip712_input_files"
-
-
-def input_files() -> list[str]:
-    files = []
-    for file in os.scandir(eip712_json_path()):
-        if fnmatch.fnmatch(file, "*-data.json"):
-            files.append(file.path)
-    return sorted(files)
-
-data = json.load(open("./tests/eip712_input_files/05-signed_ints-data.json"))
+data = json.load(open("./tests/eip712_input_files/07-fixed_bytes-data.json"))
 
 """ data = {
     "domain": {

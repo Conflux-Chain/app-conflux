@@ -36,6 +36,10 @@ class InsType(IntEnum):
     SIGN_TX        = 0x03
     PERSONAL_SIGN  = 0x04
     GET_APP_NAME   = 0x05
+    SIGN_EIP712    = 0x0A
+    EIP712_SEND_STRUCT_DEFINITION = 0x0B
+    EIP712_SEND_STRUCT_IMPLEMENTATION = 0x0C
+    EIP712_FILTERING = 0x0D
 
 class Errors(IntEnum):
     SW_DENY                    = 0x6985
@@ -63,7 +67,7 @@ class ConfluxCommandSender:
         self.backend = backend
 
     def _exchange(self, payload: bytes):
-        return self.backend.exchange(payload)
+        return self.backend.exchange_raw(payload)
 
     def _exchange_async(self, payload: bytes):
         return self.backend.exchange_async_raw(payload)

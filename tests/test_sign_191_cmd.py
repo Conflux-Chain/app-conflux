@@ -17,14 +17,6 @@ def test_sign_191_message(backend, scenario_navigator, device, navigator):
 
     message = b"Hello, World!"
     
-    # Enable display of transaction memo (NBGL devices only)
-    if not device.is_nano:
-        navigator.navigate([NavInsID.USE_CASE_HOME_SETTINGS,
-                            NavIns(NavInsID.TOUCH, (200, 113)),
-                            NavInsID.USE_CASE_SUB_SETTINGS_EXIT],
-                            screen_change_before_first_instruction=False,
-                            screen_change_after_last_instruction=False)
-    
     # Send the sign device instruction.
     # As it requires on-screen validation, the function is asynchronous.
     # It will yield the result when the navigation is done
