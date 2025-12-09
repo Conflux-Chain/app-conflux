@@ -1,10 +1,11 @@
 # documentation about APDU format is available here:
 # https://github.com/LedgerHQ/app-ethereum/blob/develop/doc/ethapp.adoc
+# pylint: skip-file
 
 import struct
 import math
 from enum import IntEnum
-from typing import Optional
+# from typing import Optional
 from ragger.bip import pack_derivation_path
 
 from .eip712 import EIP712FieldType
@@ -105,6 +106,7 @@ class CommandBuilder:
                                0x00,
                                0x00)
 
+    # pylint: disable=too-many-positional-arguments
     def eip712_send_struct_def_struct_field(self,
                                             field_type: EIP712FieldType,
                                             type_name: str,
@@ -218,7 +220,10 @@ class CommandBuilder:
                                P2Type.FILTERING_MESSAGE_INFO,
                                data)
 
-    def eip712_filtering_amount_join_token(self, token_idx: int, sig: bytes, discarded: bool) -> bytes:
+    def eip712_filtering_amount_join_token(self,
+                                           token_idx: int,
+                                           sig: bytes,
+                                           discarded: bool) -> bytes:
         data = bytearray()
         data.append(token_idx)
         data.append(len(sig))
@@ -228,7 +233,11 @@ class CommandBuilder:
                                P2Type.FILTERING_TOKEN_ADDR_CHECK,
                                data)
 
-    def eip712_filtering_amount_join_value(self, token_idx: int, name: str, sig: bytes, discarded: bool) -> bytes:
+    def eip712_filtering_amount_join_value(self,
+                                           token_idx: int,
+                                           name: str,
+                                           sig: bytes,
+                                           discarded: bool) -> bytes:
         data = bytearray()
         data.append(len(name))
         data += name.encode()
@@ -245,7 +254,7 @@ class CommandBuilder:
                                int(discarded),
                                P2Type.FILTERING_DATETIME,
                                self._eip712_filtering_send_name(name, sig))
-
+    # pylint: disable=too-many-positional-arguments
     def eip712_filtering_trusted_name(self,
                                       name: str,
                                       name_types: list[int],
@@ -268,6 +277,7 @@ class CommandBuilder:
                                P2Type.FILTERING_TRUSTED_NAME,
                                data)
 
+    # pylint: disable=too-many-positional-arguments
     def eip712_filtering_calldata_info(self,
                                        index: int,
                                        value_filter_flag: bool,

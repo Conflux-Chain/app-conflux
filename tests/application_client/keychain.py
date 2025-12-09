@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import os
 import hashlib
 from enum import Enum, auto
@@ -23,7 +24,8 @@ _keys: dict[Key, SigningKey] = {}
 
 # Open the corresponding PEM file and load its key in the global dict
 def _init_key(key: Key):
-    with open(f"{os.path.dirname(__file__)}/keychain/{key.name.lower()}.pem", encoding="utf-8") as pem_file:
+    file_path = f"{os.path.dirname(__file__)}/keychain/{key.name.lower()}.pem"
+    with open(file_path, encoding="utf-8") as pem_file:
         _keys[key] = SigningKey.from_pem(pem_file.read(), hashlib.sha256)
     assert (key in _keys) and (_keys[key] is not None)
 

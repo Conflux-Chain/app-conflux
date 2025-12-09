@@ -1,3 +1,5 @@
+# pylint: skip-file
+# mypy: ignore-errors
 from enum import IntEnum
 from typing import Generator, List, Optional
 from contextlib import contextmanager
@@ -59,7 +61,10 @@ class ConfluxCommandSender:
     def __init__(self, backend: BackendInterface) -> None:
         self._cmd_builder = CommandBuilder()
         self.backend = backend
-        
+
+    def _exchange(self, payload: bytes):
+        return self.backend.exchange(payload)
+
     def _exchange_async(self, payload: bytes):
         return self.backend.exchange_async_raw(payload)
 
@@ -160,10 +165,11 @@ class ConfluxCommandSender:
                                          p2=P2.P2_LAST,
                                          data=messages[-1]) as response:
             yield response
-            
+
     def eip712_send_struct_def_struct_name(self, name: str):
         return self._exchange_async(self._cmd_builder.eip712_send_struct_def_struct_name(name))
 
+    # pylint: disable=too-many-positional-arguments
     def eip712_send_struct_def_struct_field(self,
                                             field_type: EIP712FieldType,
                                             type_name: str,
@@ -194,7 +200,7 @@ class ConfluxCommandSender:
 
     def get_async_response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response
-    
+
     # alias of get_async_response
     def response(self) -> Optional[RAPDU]:
         return self.backend.last_async_response

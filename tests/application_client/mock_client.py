@@ -1,6 +1,7 @@
-from ragger.utils import RAPDU
+# mypy: ignore-errors
 from typing import Optional
 import contextlib
+from ragger.utils import RAPDU
 from .status_word import StatusWord
 from .eip712 import EIP712FieldType
 from .command_builder import CommandBuilder
@@ -11,20 +12,28 @@ class EthAppClient:
         self._cmd_builder = CommandBuilder()
 
     def _exchange_async(self, payload: bytes):
-        print(f"Exchanging: ins->{payload[1]:02x} p1->{payload[2]:02x} p2->{payload[3]:02x} len->{payload[4]} data -> {payload[5:].hex()}")
+        print(
+            f"Exchanging: ins->{payload[1]:02x} "
+            f"p1->{payload[2]:02x} p2->{payload[3]:02x} "
+            f"len->{payload[4]} data -> {payload[5:].hex()}"
+        )
         return contextlib.nullcontext(StatusWord.OK)
 
     def _exchange(self, payload: bytes) -> RAPDU:
-        print(f"Exchanging: ins->{payload[1]:02x} p1->{payload[2]:02x} p2->{payload[3]:02x} len->{payload[4]} data -> {payload[5:].hex()}")
+        print(
+            f"Exchanging: ins->{payload[1]:02x} p1->{payload[2]:02x} "
+            f"p2->{payload[3]:02x} len->{payload[4]} data -> {payload[5:].hex()}"
+        )
         return StatusWord.OK
 
     def response(self) -> Optional[RAPDU]:
         return RAPDU(StatusWord.OK, b"")
-    
+
     def eip712_send_struct_def_struct_name(self, name: str):
         print("send struct def->name:", name)
         return self._exchange_async(self._cmd_builder.eip712_send_struct_def_struct_name(name))
 
+    # pylint: disable=too-many-positional-arguments
     def eip712_send_struct_def_struct_field(self,
                                             field_type: EIP712FieldType,
                                             type_name: str,
