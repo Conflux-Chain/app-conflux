@@ -31,6 +31,13 @@ pub mod p1_sign_tx {
     pub const P1_SIGN_TX_MAX: u8 = 0x03;
 }
 
+pub mod p1_personal_msg {
+    // P1 for first APDU number.
+    pub const P1_SIGN_MSG_START: u8 = 0x00;
+    // P1 for maximum APDU number.
+    pub const P1_SIGN_MSG_MAX: u8 = 0x20;
+}
+
 pub mod p2_sign_tx {
     // P2 for last APDU to receive.
     pub const P2_SIGN_TX_LAST: u8 = 0x00;

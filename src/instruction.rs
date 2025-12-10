@@ -1,7 +1,7 @@
 use crate::{
     ins_consts::{
-        ins, p1_eip712_struct_impl, p1_sign_tx, p2_eip712_struct_def, p2_eip712_struct_impl,
-        p2_sign_eip712, p2_sign_tx,
+        ins, p1_eip712_struct_impl, p1_personal_msg, p1_sign_tx, p2_eip712_struct_def,
+        p2_eip712_struct_impl, p2_sign_eip712, p2_sign_tx,
     },
     AppSW,
 };
@@ -66,12 +66,12 @@ impl TryFrom<ApduHeader> for Instruction {
             }),
             (
                 ins::SIGN_PERSONAL_MESSAGE,
-                p1_sign_tx::P1_SIGN_TX_START,
+                p1_personal_msg::P1_SIGN_MSG_START,
                 p2_sign_tx::P2_SIGN_TX_MORE,
             )
             | (
                 ins::SIGN_PERSONAL_MESSAGE,
-                1..=p1_sign_tx::P1_SIGN_TX_MAX,
+                1..=p1_personal_msg::P1_SIGN_MSG_MAX,
                 p2_sign_tx::P2_SIGN_TX_LAST | p2_sign_tx::P2_SIGN_TX_MORE,
             ) => Ok(Instruction::Sign191 {
                 chunk: value.p1,

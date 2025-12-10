@@ -3,8 +3,6 @@ use crate::{
     handlers::{common::Context, hash_sign_and_send},
     AppSW,
 };
-// use crate::consts::EIP191_PREFIX;
-// use alloc::vec::Vec;
 use alloy_primitives::utils::eip191_message;
 use ledger_device_sdk::io::Comm;
 
@@ -14,7 +12,6 @@ pub fn handler_sign_191(
     more: bool,
     ctx: &mut Context,
 ) -> Result<(), AppSW> {
-    // Try to get data from comm
     let data = comm.get_data().map_err(|_| AppSW::WrongApduLength)?;
     // First chunk, try to parse the path
     if chunk == 0 {

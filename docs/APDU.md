@@ -253,7 +253,7 @@ This command has been supported since app version 2.3.0
 | CLA  | INS  | P1                                      | P2   | Lc       | Le       |
 | ---- | ---- | --------------------------------------- | ---- | -------- | -------- |
 | `e0` | `04` | `00`: first data block      | `80` more | variable | variable |
-|      |      | `01`-`03`: subsequent data block index |  `00` last    |          |          |
+|      |      | `01`-`20`: subsequent data block index |  `00` last    |          |          |
 
 ##### Request payload
 
