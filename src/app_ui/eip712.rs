@@ -1,7 +1,7 @@
 #![allow(unused_assignments)]
 use crate::{
     app_ui::CFX_ICON,
-    eip712::{types::EIP712_DOMAIN_TYPE_NAME, Eip712Context},
+    eip712::{Eip712Context, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME},
     AppSW,
 };
 use alloc::{format, vec::Vec};
@@ -18,9 +18,15 @@ pub fn ui_display_712_message(ctx: &Eip712Context) -> Result<bool, AppSW> {
     let field_count = ctx.current_struct_field_values.len();
     let mut my_fields: Vec<Field> = Vec::with_capacity(base_count + domain_count + field_count);
 
+    let domain_type_name = if ctx.is_cip23_domain() {
+        CIP23_DOMAIN_TYPE_NAME
+    } else {
+        EIP712_DOMAIN_TYPE_NAME
+    };
+
     my_fields.push(Field {
         name: "Review struct",
-        value: EIP712_DOMAIN_TYPE_NAME,
+        value: domain_type_name,
     });
 
     if let Some(name) = ctx.eip712_domain.name.as_ref() {

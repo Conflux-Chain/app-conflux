@@ -124,7 +124,7 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW>
     }
 }
 
-pub fn ui_display_191_message(ctx: &Context) -> Result<bool, AppSW> {
+pub fn ui_display_personal_message(ctx: &Context) -> Result<bool, AppSW> {
     let msg = core::str::from_utf8(&ctx.raw_tx).map_err(|_| AppSW::TxDisplayFail)?;
 
     let my_fields = vec![Field {

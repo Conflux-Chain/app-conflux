@@ -42,7 +42,7 @@ use handlers::{
     common::Context,
     get_public_key::handler_get_public_key,
     get_version::handler_get_version,
-    sign_191::handler_sign_191,
+    sign_191::handler_personal_sign,
     sign_712::{
         handler_sign_712, handler_sign_712_struct_definition, handler_sign_712_struct_impl,
     },
@@ -69,7 +69,10 @@ fn show_status_and_home_if_needed(ins: &Instruction, tx_ctx: &mut Context, statu
         (Instruction::SignTx { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
             (true, StatusType::Transaction)
         }
-        (Instruction::Sign191 { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
+        (Instruction::SignEip191 { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
+            (true, StatusType::Message)
+        }
+        (Instruction::SignCip23 { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
             (true, StatusType::Message)
         }
         (Instruction::Sign712 { .. }, AppSW::Deny | AppSW::Ok) => (true, StatusType::Message),
@@ -135,7 +138,12 @@ fn handle_apdu(
             return_chain_code,
         } => handler_get_public_key(comm, *display, *return_chain_code),
         Instruction::SignTx { chunk, more } => handler_sign_tx(comm, *chunk, *more, ctx),
-        Instruction::Sign191 { chunk, more } => handler_sign_191(comm, *chunk, *more, ctx),
+        Instruction::SignCip23 { chunk, more } => {
+            handler_personal_sign(comm, *chunk, *more, ctx, false)
+        }
+        Instruction::SignEip191 { chunk, more } => {
+            handler_personal_sign(comm, *chunk, *more, ctx, true)
+        }
         Instruction::Eip712StructDefinition { is_struct_name } => {
             handler_sign_712_struct_definition(comm, *is_struct_name, eip712_ctx)
         }

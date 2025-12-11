@@ -26,4 +26,4 @@ jobs:
       with:
         builtin: clear,rare
         check_filenames: true
-        ignore_words_list: crate,Crate
+        ignore_words_list: crate,Crate,CIPs

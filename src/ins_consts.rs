@@ -9,11 +9,13 @@ pub mod ins {
     /// SIGN TRANSACTION
     pub const SIGN_TRANSACTION: u8 = 0x03;
     /// SIGN PERSONAL MESSAGE
-    pub const SIGN_PERSONAL_MESSAGE: u8 = 0x04;
+    pub const SIGN_PERSONAL_MESSAGE: u8 = 0x04; // this is cip23 personal message
     /// GET APP NAME
     pub const GET_APP_NAME: u8 = 0x05;
     // GET APP CONFIGURATION
     pub const GET_APP_CONFIGURATION: u8 = 0x06;
+    /// SIGN PERSONAL MESSAGE
+    pub const SIGN_ETH_PERSONAL_MESSAGE: u8 = 0x07;
     /// SIGN EIP 712
     pub const SIGN_EIP712: u8 = 0x0A;
     /// EIP712 SEND STRUCT DEFINITION
