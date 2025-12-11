@@ -2,9 +2,9 @@ use crate::{
     app_ui::eip712::ui_display_712_message,
     bip32_path::Bip32Path,
     eip712::{
-        types::{Eip712FieldDefinition, Eip712FieldValue, EIP712_DOMAIN_TYPE_NAME},
+        types::{Eip712FieldDefinition, Eip712FieldValue},
         utils::parse_utf8_string,
-        Eip712Context,
+        Eip712Context, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME,
     },
     handlers::sign_and_send,
     ins_consts::p2_eip712_struct_impl,
@@ -58,8 +58,9 @@ pub fn handler_sign_712_struct_impl(
             let struct_name = parse_utf8_string(data).map_err(|_| AppSW::InvalidString)?;
 
             // EIP712_DOMAIN_TYPE_NAME must come first
-            if ctx.current_root_struct.is_none() && struct_name.as_str() != EIP712_DOMAIN_TYPE_NAME
-            {
+            let is_domain_type = struct_name.as_str() == CIP23_DOMAIN_TYPE_NAME
+                || struct_name.as_str() == EIP712_DOMAIN_TYPE_NAME;
+            if ctx.current_root_struct.is_none() && !is_domain_type {
                 return Err(AppSW::InvalidData);
             }
             ctx.parse_eip712_domain().map_err(|_| AppSW::InvalidData)?;

@@ -51,6 +51,18 @@ def check_rs_prefix_msg_signature_validity(public_key: bytes, signature: bytes, 
                      data=message,
                      hashfunc=keccak_256,
                      sigdecode=sigdecode_string)
+    
+def check_rs_cfx_prefix_msg_signature_validity(public_key: bytes, signature: bytes, message: bytes) -> bool:
+    pk: VerifyingKey = VerifyingKey.from_string(
+        public_key,
+        curve=SECP256k1,
+        hashfunc=sha256
+    )
+    message = CONFLUX_PREFIX + str(len(message)).encode() + message
+    return pk.verify(signature=signature,
+                     data=message,
+                     hashfunc=keccak_256,
+                     sigdecode=sigdecode_string)
 
 def recover_message(msg, vrs: tuple[int, int, int]) -> bytes:
     if isinstance(msg, dict):  # EIP-712

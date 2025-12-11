@@ -10,10 +10,10 @@ use alloy_primitives::{Address, B256, U256};
 use ledger_rust_eip712::{
     eip712::eip712_signing_hash, parser, Eip712Domain, Eip712Types, Resolver, TypedData,
 };
-pub use ledger_rust_eip712::{types, utils};
+pub use ledger_rust_eip712::{types, utils, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME};
 use types::{
     build_resolver_from_struct_defs, Eip712FieldDefinition, Eip712FieldValue,
-    Eip712StructDefinitions, Eip712StructImplementation, EIP712_DOMAIN_TYPE_NAME,
+    Eip712StructDefinitions, Eip712StructImplementation,
 };
 
 pub struct Eip712Context {
@@ -66,12 +66,15 @@ impl Eip712Context {
     }
 
     pub fn parse_eip712_domain(&mut self) -> Result<(), String> {
-        if self.current_root_struct != Some(EIP712_DOMAIN_TYPE_NAME.to_string()) {
+        if self.current_root_struct != Some(EIP712_DOMAIN_TYPE_NAME.to_string())
+            && self.current_root_struct != Some(CIP23_DOMAIN_TYPE_NAME.to_string())
+        {
             return Ok(());
         }
         let field_defs = self
             .struct_definitions
             .get(EIP712_DOMAIN_TYPE_NAME)
+            .or(self.struct_definitions.get(CIP23_DOMAIN_TYPE_NAME))
             .ok_or("field defs not found")?;
 
         // If we already have a struct name and fields, we should finalize the previous struct
@@ -94,6 +97,10 @@ impl Eip712Context {
         eip712_impls
             .parse_eip712_domain(field_defs, &mut self.eip712_domain)
             .map_err(|e| e.to_string())
+    }
+
+    pub fn is_cip23_domain(&self) -> bool {
+        self.struct_definitions.contains_key(CIP23_DOMAIN_TYPE_NAME)
     }
 
     pub fn is_eip712_domain_set_up(&self) -> bool {

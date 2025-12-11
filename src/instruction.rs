@@ -19,7 +19,11 @@ pub enum Instruction {
         chunk: u8,
         more: bool,
     },
-    Sign191 {
+    SignCip23 {
+        chunk: u8,
+        more: bool,
+    },
+    SignEip191 {
         chunk: u8,
         more: bool,
     },
@@ -64,6 +68,7 @@ impl TryFrom<ApduHeader> for Instruction {
                 chunk: value.p1,
                 more: value.p2 == p2_sign_tx::P2_SIGN_TX_MORE,
             }),
+            // CIP23 personal message
             (
                 ins::SIGN_PERSONAL_MESSAGE,
                 p1_personal_msg::P1_SIGN_MSG_START,
@@ -73,7 +78,21 @@ impl TryFrom<ApduHeader> for Instruction {
                 ins::SIGN_PERSONAL_MESSAGE,
                 1..=p1_personal_msg::P1_SIGN_MSG_MAX,
                 p2_sign_tx::P2_SIGN_TX_LAST | p2_sign_tx::P2_SIGN_TX_MORE,
-            ) => Ok(Instruction::Sign191 {
+            ) => Ok(Instruction::SignCip23 {
+                chunk: value.p1,
+                more: value.p2 == p2_sign_tx::P2_SIGN_TX_MORE,
+            }),
+            // EIP191 personal message
+            (
+                ins::SIGN_ETH_PERSONAL_MESSAGE,
+                p1_personal_msg::P1_SIGN_MSG_START,
+                p2_sign_tx::P2_SIGN_TX_MORE,
+            )
+            | (
+                ins::SIGN_ETH_PERSONAL_MESSAGE,
+                1..=p1_personal_msg::P1_SIGN_MSG_MAX,
+                p2_sign_tx::P2_SIGN_TX_LAST | p2_sign_tx::P2_SIGN_TX_MORE,
+            ) => Ok(Instruction::SignEip191 {
                 chunk: value.p1,
                 more: value.p2 == p2_sign_tx::P2_SIGN_TX_MORE,
             }),
