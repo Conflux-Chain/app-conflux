@@ -609,6 +609,8 @@ def process_data(aclient: EthAppClient,
     types = data_json["types"]
     domain = data_json["domain"]
     message = data_json["message"]
+    if domain_typename not in types.keys():
+        domain_typename = "CIP23Domain"
 
     # if filters:
     #     init_signature_context(types, domain, filters)
