@@ -6,7 +6,7 @@ import json
 
 app_client = EthAppClient()
 
-data = json.load(open("./tests/eip712_input_files/07-fixed_bytes-data.json"))
+data = json.load(open("./tests/eip712_input_files/cip23-simple-mail-data.json"))
 
 """ data = {
     "domain": {

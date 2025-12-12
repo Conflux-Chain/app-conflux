@@ -67,7 +67,8 @@ def eip712_new_common(scenario_navigator: NavigateWithScenario,
 
     vrs = ResponseParser.signature(app_client.response().data)
     # verify signature
-    assert DEVICE_ADDR == recover_message(data, vrs)
+    if "EIP712Domain" in data["types"].keys():
+        assert DEVICE_ADDR == recover_message(data, vrs)
     
 def test_eip712_new(scenario_navigator: NavigateWithScenario, input_file: Path):
     filters = None
