@@ -1,3 +1,4 @@
+#![allow(clippy::manual_div_ceil)]
 use crate::consts::{ADDRRESS_BYTES_LEN, EXPONENT_SMALLEST_UNIT, HASH_BYTES_LEN};
 use alloc::string::{String, ToString};
 use bigdecimal::{BigDecimal, FromPrimitive};
