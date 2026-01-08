@@ -5,7 +5,7 @@ authors = ["Conflux Foundation"]
 edition = "2021"
 
 [dependencies]
-ledger_device_sdk = "1.29.1"
+ledger_device_sdk = "1.30.0"
 # numtoa = "0.2.4"
 k256 = { version = "0.13.4", default-features = false, features = ["ecdsa"] }
 uint = { version = "0.10.0", default-features = false }

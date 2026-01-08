@@ -75,7 +75,7 @@ fn show_status_and_home_if_needed(ins: &Instruction, tx_ctx: &mut Context, statu
         (Instruction::SignCip23 { .. }, AppSW::Deny | AppSW::Ok) if tx_ctx.finished() => {
             (true, StatusType::Message)
         }
-        (Instruction::Sign712 { .. }, AppSW::Deny | AppSW::Ok) => (true, StatusType::Message),
+        (Instruction::Sign712, AppSW::Deny | AppSW::Ok) => (true, StatusType::Message),
         (_, _) => (false, StatusType::Address),
     };
 
