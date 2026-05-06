@@ -4,9 +4,7 @@ use alloc::{
     vec::Vec,
 };
 use alloy_primitives::B256;
-use ledger_rust_eip712::{
-    eip712::eip712_signing_hash, parser, Eip712Domain, TypedData,
-};
+use ledger_rust_eip712::{eip712::eip712_signing_hash, parser, Eip712Domain, TypedData};
 pub use ledger_rust_eip712::{types, utils, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME};
 use types::{
     build_resolver_from_struct_defs, Eip712FieldDefinition, Eip712FieldValue,

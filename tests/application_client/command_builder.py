@@ -85,7 +85,7 @@ class CommandBuilder:
                    ins: InsType,
                    p1: int,
                    p2: int,
-                   cdata: bytes = bytes()) -> bytes:
+                   cdata: bytes | bytearray = bytes()) -> bytearray:
 
         header = bytearray()
         header.append(self._CLA)
@@ -95,13 +95,13 @@ class CommandBuilder:
         header.append(len(cdata))
         return header + cdata
 
-    def eip712_send_struct_def_struct_name(self, name: str) -> bytes:
+    def eip712_send_struct_def_struct_name(self, name: str) -> bytearray:
         return self._serialize(InsType.EIP712_SEND_STRUCT_DEF,
                                P1Type.COMPLETE_SEND,
                                P2Type.STRUCT_NAME,
                                name.encode())
 
-    def get_app_configuration(self) -> bytes:
+    def get_app_configuration(self) -> bytearray:
         return self._serialize(InsType.GET_APP_CONFIGURATION,
                                0x00,
                                0x00)
@@ -112,7 +112,7 @@ class CommandBuilder:
                                             type_name: str,
                                             type_size: int,
                                             array_levels: list,
-                                            key_name: str) -> bytes:
+                                            key_name: str) -> bytearray:
         data = bytearray()
         typedesc = 0
         typedesc |= (len(array_levels) > 0) << 7
@@ -137,13 +137,13 @@ class CommandBuilder:
                                P2Type.STRUCT_FIELD,
                                data)
 
-    def eip712_send_struct_impl_root_struct(self, name: str) -> bytes:
+    def eip712_send_struct_impl_root_struct(self, name: str) -> bytearray:
         return self._serialize(InsType.EIP712_SEND_STRUCT_IMPL,
                                P1Type.COMPLETE_SEND,
                                P2Type.STRUCT_NAME,
                                name.encode())
 
-    def eip712_send_struct_impl_array(self, size: int) -> bytes:
+    def eip712_send_struct_impl_array(self, size: int) -> bytearray:
         data = bytearray()
         data.append(size)
         return self._serialize(InsType.EIP712_SEND_STRUCT_IMPL,
@@ -151,7 +151,7 @@ class CommandBuilder:
                                P2Type.ARRAY,
                                data)
 
-    def eip712_send_struct_impl_struct_field(self, data: bytearray) -> list[bytes]:
+    def eip712_send_struct_impl_struct_field(self, data: bytearray) -> list[bytearray]:
         chunks = []
         # Add a 16-bit integer with the data's byte length (network byte order)
         data_w_length = bytearray()
@@ -166,7 +166,7 @@ class CommandBuilder:
             data_w_length = data_w_length[0xff:]
         return chunks
 
-    def eip712_sign_new(self, bip32_path: str) -> bytes:
+    def eip712_sign_new(self, bip32_path: str) -> bytearray:
         data = pack_derivation_path(bip32_path)
         return self._serialize(InsType.EIP712_SIGN,
                                P1Type.COMPLETE_SEND,
@@ -191,7 +191,7 @@ class CommandBuilder:
                                P2Type.FILTERING_ACTIVATE,
                                bytearray())
 
-    def _eip712_filtering_send_name(self, name: str, sig: bytes) -> bytes:
+    def _eip712_filtering_send_name(self, name: str, sig: bytes) -> bytearray:
         data = bytearray()
         data.append(len(name))
         data += name.encode()
@@ -199,7 +199,7 @@ class CommandBuilder:
         data += sig
         return data
 
-    def eip712_filtering_discarded_path(self, path: str) -> bytes:
+    def eip712_filtering_discarded_path(self, path: str) -> bytearray:
         data = bytearray()
         data.append(len(path))
         data += path.encode()
@@ -208,7 +208,7 @@ class CommandBuilder:
                                P2Type.FILTERING_DISCARDED_PATH,
                                data)
 
-    def eip712_filtering_message_info(self, name: str, filters_count: int, sig: bytes) -> bytes:
+    def eip712_filtering_message_info(self, name: str, filters_count: int, sig: bytes) -> bytearray:
         data = bytearray()
         data.append(len(name))
         data += name.encode()
@@ -223,7 +223,7 @@ class CommandBuilder:
     def eip712_filtering_amount_join_token(self,
                                            token_idx: int,
                                            sig: bytes,
-                                           discarded: bool) -> bytes:
+                                           discarded: bool) -> bytearray:
         data = bytearray()
         data.append(token_idx)
         data.append(len(sig))
@@ -237,7 +237,7 @@ class CommandBuilder:
                                            token_idx: int,
                                            name: str,
                                            sig: bytes,
-                                           discarded: bool) -> bytes:
+                                           discarded: bool) -> bytearray:
         data = bytearray()
         data.append(len(name))
         data += name.encode()
@@ -249,7 +249,7 @@ class CommandBuilder:
                                P2Type.FILTERING_AMOUNT_FIELD,
                                data)
 
-    def eip712_filtering_datetime(self, name: str, sig: bytes, discarded: bool) -> bytes:
+    def eip712_filtering_datetime(self, name: str, sig: bytes, discarded: bool) -> bytearray:
         return self._serialize(InsType.EIP712_SEND_FILTERING,
                                int(discarded),
                                P2Type.FILTERING_DATETIME,
@@ -260,7 +260,7 @@ class CommandBuilder:
                                       name_types: list[int],
                                       name_sources: list[int],
                                       sig: bytes,
-                                      discarded: bool) -> bytes:
+                                      discarded: bool) -> bytearray:
         data = bytearray()
         data.append(len(name))
         data += name.encode()
@@ -286,7 +286,7 @@ class CommandBuilder:
                                        selector_filter_flag: bool,
                                        amount_filter_flag: bool,
                                        spender_filter_flag: int,
-                                       sig: bytes) -> bytes:
+                                       sig: bytes) -> bytearray:
         data = bytearray()
         data += struct.pack(">B", index)
         data += struct.pack(">B", value_filter_flag)
@@ -380,7 +380,7 @@ class CommandBuilder:
                                P2Type.FILTERING_CALLDATA_SPENDER,
                                data)
 
-    def eip712_filtering_raw(self, name: str, sig: bytes, discarded: bool) -> bytes:
+    def eip712_filtering_raw(self, name: str, sig: bytes, discarded: bool) -> bytearray:
         return self._serialize(InsType.EIP712_SEND_FILTERING,
                                int(discarded),
                                P2Type.FILTERING_RAW,
@@ -391,7 +391,7 @@ class CommandBuilder:
                                         addr: bytes,
                                         decimals: int,
                                         chain_id: int,
-                                        sig: bytes) -> bytes:
+                                        sig: bytes) -> bytearray:
         payload = bytearray()
         payload.append(len(ticker))
         payload += ticker.encode()
@@ -409,7 +409,7 @@ class CommandBuilder:
                              tlv_payload: bytes,
                              p1l: list[int] = [0x01, 0x00],
                              p2l: list[int] = [0x00],
-                             payload: bytes = bytes()) -> list[bytes]:
+                             payload: bytes = bytes()) -> list[bytearray]:
         assert len(p1l) in [1, 2]
         assert len(p2l) in [1, 2]
         chunks = []
@@ -428,8 +428,8 @@ class CommandBuilder:
             p2 = p2l[-1]
         return chunks
 
-    def provide_proxy_info(self, tlv_payload: bytes) -> list[bytes]:
+    def provide_proxy_info(self, tlv_payload: bytes) -> list[bytearray]:
         return self.common_tlv_serialize(InsType.PROVIDE_PROXY_INFO, tlv_payload)
 
-    def provide_safe_account(self, tlv_payload: bytes, p2: int) -> list[bytes]:
+    def provide_safe_account(self, tlv_payload: bytes, p2: int) -> list[bytearray]:
         return self.common_tlv_serialize(InsType.PROVIDE_SAFE_ACCOUNT, tlv_payload, p2l=[p2])
