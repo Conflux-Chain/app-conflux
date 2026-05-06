@@ -626,7 +626,7 @@ dependencies = [
 [[package]]
 name = "ledger-rust-eip712"
 version = "0.1.0"
-source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=deaae6d29cf23802b482513b9a358d1ce4d428c3#deaae6d29cf23802b482513b9a358d1ce4d428c3"
+source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=3c8e11c98fb857f05cdd724f053784ff9d4f105a#3c8e11c98fb857f05cdd724f053784ff9d4f105a"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-primitives",
