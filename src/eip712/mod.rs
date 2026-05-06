@@ -1,14 +1,11 @@
-#![allow(unused)]
-
-use crate::AppSW;
 use alloc::{
     format,
     string::{String, ToString},
     vec::Vec,
 };
-use alloy_primitives::{Address, B256, U256};
+use alloy_primitives::B256;
 use ledger_rust_eip712::{
-    eip712::eip712_signing_hash, parser, Eip712Domain, Eip712Types, Resolver, TypedData,
+    eip712::eip712_signing_hash, parser, Eip712Domain, TypedData,
 };
 pub use ledger_rust_eip712::{types, utils, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME};
 use types::{
@@ -111,6 +108,7 @@ impl Eip712Context {
             || self.eip712_domain.salt.is_some()
     }
 
+    #[allow(unused)]
     pub fn eip712_signing_hash(&mut self) -> Result<B256, &str> {
         if !self.is_eip712_domain_set_up() {
             return Err("no domain data");
