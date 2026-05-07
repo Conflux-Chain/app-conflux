@@ -4,11 +4,10 @@ use alloc::{
     vec::Vec,
 };
 use alloy_primitives::B256;
-use ledger_rust_eip712::{eip712::eip712_signing_hash, parser, Eip712Domain, TypedData};
+use ledger_rust_eip712::{eip712::eip712_signing_hash, Eip712Domain};
 pub use ledger_rust_eip712::{types, utils, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME};
 use types::{
-    build_resolver_from_struct_defs, Eip712FieldDefinition, Eip712FieldValue,
-    Eip712StructDefinitions, Eip712StructImplementation,
+    Eip712FieldDefinition, Eip712FieldValue, Eip712StructDefinitions, Eip712StructImplementation,
 };
 
 pub struct Eip712Context {
@@ -106,46 +105,6 @@ impl Eip712Context {
             || self.eip712_domain.salt.is_some()
     }
 
-    #[allow(unused)]
-    pub fn eip712_signing_hash(&mut self) -> Result<B256, &str> {
-        if !self.is_eip712_domain_set_up() {
-            return Err("no domain data");
-        }
-        if self.current_root_struct.is_none() {
-            return Err("no primary type");
-        }
-        let primary_type = self.current_root_struct.take().unwrap();
-
-        let resolver = build_resolver_from_struct_defs(&self.struct_definitions)?;
-
-        let type_schema = parser::build_schema(&self.struct_definitions, &primary_type)
-            .map_err(|_| "build schema failed")?;
-
-        // clear struct definitions to save memory
-        self.struct_definitions.clear();
-
-        let field_values: Vec<_> = self.current_struct_field_values.drain(..).collect();
-        let mut data_iter = field_values.into_iter().map(|v| v.value);
-
-        let value =
-            parser::build_value(&type_schema, &mut data_iter).map_err(|_| "invalid data")?;
-
-        let typed_data = TypedData {
-            domain: self.eip712_domain.clone(),
-            resolver,
-            primary_type,
-            message: value,
-        };
-
-        // clear domain to save memory
-        self.eip712_domain = Default::default();
-
-        typed_data
-            .eip712_signing_hash()
-            .map_err(|_| "signing hash compute failed")
-    }
-
-    //
     pub fn custom_eip712_signing_hash(&mut self) -> Result<B256, &str> {
         if !self.is_eip712_domain_set_up() {
             return Err("no domain data");

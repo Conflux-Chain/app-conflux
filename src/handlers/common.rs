@@ -22,7 +22,6 @@ impl Context {
         }
     }
     // Get review status
-    #[allow(dead_code)]
     pub fn finished(&self) -> bool {
         self.review_finished
     }

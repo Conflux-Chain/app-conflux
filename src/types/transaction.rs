@@ -7,7 +7,7 @@ pub const TX_RLP_PREFIX_2930: [u8; 4] = [0x63, 0x66, 0x78, 0x01]; // "cfx" + 1
 pub const TX_RLP_PREFIX_1559: [u8; 4] = [0x63, 0x66, 0x78, 0x02]; // "cfx" + 2
 pub const ONE_CFX_IN_DRIP: u64 = 1_000_000_000_000_000_000;
 
-#[allow(dead_code)]
+#[allow(unused)]
 #[derive(Debug, Default, Clone)]
 pub struct Transaction {
     pub to: Address,

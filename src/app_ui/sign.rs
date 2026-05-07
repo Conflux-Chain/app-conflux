@@ -34,7 +34,6 @@ use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglReview, PageIndex};
 /// # Arguments
 ///
 /// * `tx` - Transaction to be displayed for validation
-#[allow(unused_variables)]
 pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW> {
     let fully_decoded = tx.fully_decoded();
 

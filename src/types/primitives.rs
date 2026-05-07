@@ -63,16 +63,6 @@ impl Address {
     pub fn is_user_address(&self) -> bool {
         self.address_type() == 0x10
     }
-
-    #[allow(unused)]
-    pub fn is_contract_address(&self) -> bool {
-        self.address_type() == 0x80
-    }
-
-    #[allow(unused)]
-    pub fn is_builtin_address(&self) -> bool {
-        self.address_type() == 0x00
-    }
 }
 
 impl Decodable for Address {
