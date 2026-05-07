@@ -22,7 +22,6 @@ impl Context {
         }
     }
     // Get review status
-    #[allow(unused)]
     pub fn finished(&self) -> bool {
         self.review_finished
     }
