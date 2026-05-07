@@ -140,9 +140,9 @@ checksum = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
 
 [[package]]
 name = "bigdecimal"
-version = "0.4.9"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "560f42649de9fa436b73517378a147ec21f6c997a546581df4b4b31677828934"
+checksum = "4d6867f1565b3aad85681f1015055b087fcfd840d6aeee6eee7f2da317603695"
 dependencies = [
  "autocfg",
  "libm",
@@ -502,9 +502,9 @@ dependencies = [
 
 [[package]]
 name = "gif"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5df2ba84018d80c213569363bdcd0c64e6933c67fe4c1d60ecf822971a3c35e"
+checksum = "ee8cfcc411d9adbbaba82fb72661cc1bcca13e8bba98b364e62b2dba8f960159"
 dependencies = [
  "color_quant",
  "weezl",
@@ -575,9 +575,9 @@ dependencies = [
 
 [[package]]
 name = "include_gif"
-version = "1.2.6"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4046578028f0249b76fb88acb6a0eac1f635bf9e2630ba5d0562831597ffc323"
+checksum = "59152fb9707e856f65a10a25ba0b7141589bcf5cbe7f653fcda2875e45fc78f7"
 dependencies = [
  "flate2",
  "image",
@@ -626,7 +626,7 @@ dependencies = [
 [[package]]
 name = "ledger-rust-eip712"
 version = "0.1.0"
-source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=deaae6d29cf23802b482513b9a358d1ce4d428c3#deaae6d29cf23802b482513b9a358d1ce4d428c3"
+source = "git+https://github.com/Conflux-Chain/ledger-rust-eip712.git?rev=3c8e11c98fb857f05cdd724f053784ff9d4f105a#3c8e11c98fb857f05cdd724f053784ff9d4f105a"
 dependencies = [
  "alloy-dyn-abi",
  "alloy-primitives",
@@ -637,9 +637,9 @@ dependencies = [
 
 [[package]]
 name = "ledger_device_sdk"
-version = "1.34.0"
+version = "1.35.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8adde0c75d115974c33db5e8e50dbf809d874d64ea970570cd6cc523ce009d6b"
+checksum = "85fc7dea35e2d9d0a305fc9594539af5f510cd7c2d764f944542c4710731ae58"
 dependencies = [
  "const-zero",
  "include_gif",
@@ -653,9 +653,9 @@ dependencies = [
 
 [[package]]
 name = "ledger_secure_sdk_sys"
-version = "1.15.0"
+version = "1.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f18ccb022d22741651f4a13bb417e2e5f4f2d68b832409b80bdc3726e76b1bd9"
+checksum = "58d50b8764859daf1b5176c5aad8ccc989494c16b08fa266e22c7907e60956e9"
 dependencies = [
  "bindgen",
  "cc",
@@ -877,9 +877,9 @@ dependencies = [
 
 [[package]]
 name = "pxfm"
-version = "0.1.28"
+version = "0.1.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5a041e753da8b807c9255f28de81879c78c876392ff2469cde94799b2896b9d"
+checksum = "e0c5ccf5294c6ccd63a74f1565028353830a9c2f5eb0c682c355c471726a6e3f"
 
 [[package]]
 name = "quote"

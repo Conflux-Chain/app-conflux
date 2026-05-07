@@ -33,9 +33,3 @@ impl From<AppSW> for Reply {
         Reply(sw as u16)
     }
 }
-
-// To keep consistency with c version app-conflux
-#[allow(dead_code)]
-const APP_SW_CIP37_CONVERSION_FAIL: u16 = 0xB008;
-#[allow(dead_code)]
-const APP_SW_DISPLAY_BIP32_PATH_FAIL: u16 = 0xB001;

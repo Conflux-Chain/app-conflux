@@ -23,5 +23,3 @@ pub const APP_FLAG_DETAILED_DISPLAY_ENABLED: u8 = 0x02;
  * One CFX that can be paid for storage.
  */
 pub const STORAGE_OF_ONE_CFX: u64 = 1024;
-
-// pub const EIP191_PREFIX: &str = "\x19Ethereum Signed Message:\n";

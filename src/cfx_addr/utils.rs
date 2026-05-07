@@ -45,8 +45,7 @@ pub fn convert_bits(
     pad: bool,
 ) -> Result<Vec<u8>, &'static str> {
     assert!(inbits <= 8 && outbits <= 8);
-    #[allow(clippy::manual_div_ceil)]
-    let num_bytes = (data.len() * inbits as usize + outbits as usize - 1) / outbits as usize;
+    let num_bytes = (data.len() * inbits as usize).div_ceil(outbits as usize);
     let mut ret = Vec::with_capacity(num_bytes);
     let mut acc: u16 = 0; // accumulator of bits
     let mut num: u8 = 0; // num bits in acc

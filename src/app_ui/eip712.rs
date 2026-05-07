@@ -107,7 +107,7 @@ pub fn ui_display_712_message(ctx: &Eip712Context) -> Result<bool, AppSW> {
         .titles(
             "Review Typed Message",
             "Blind signing required",
-            "Accept risk and sign typed message?",
+            "Accept risk and sign message",
         )
         .blind()
         .glyph(&CFX_ICON);
