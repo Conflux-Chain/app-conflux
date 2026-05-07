@@ -22,7 +22,7 @@ impl Context {
         }
     }
     // Get review status
-    #[allow(dead_code)]
+    #[allow(unused)]
     pub fn finished(&self) -> bool {
         self.review_finished
     }

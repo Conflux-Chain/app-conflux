@@ -1,4 +1,3 @@
-#![allow(unused_assignments)]
 use crate::{
     app_ui::CFX_ICON,
     eip712::{Eip712Context, CIP23_DOMAIN_TYPE_NAME, EIP712_DOMAIN_TYPE_NAME},
@@ -43,30 +42,35 @@ pub fn ui_display_712_message(ctx: &Eip712Context) -> Result<bool, AppSW> {
         });
     }
 
-    let mut chain_id_str = Default::default();
-    if let Some(chain_id) = ctx.eip712_domain.chain_id.as_ref() {
-        chain_id_str = format!("{}", chain_id);
+    let chain_id_str = ctx
+        .eip712_domain
+        .chain_id
+        .as_ref()
+        .map(|c| format!("{}", c));
+    if let Some(s) = chain_id_str.as_ref() {
         my_fields.push(Field {
             name: "ChainId",
-            value: chain_id_str.as_str(),
+            value: s.as_str(),
         });
     }
 
-    let mut contract_addr_str = Default::default();
-    if let Some(contract) = ctx.eip712_domain.verifying_contract.as_ref() {
-        contract_addr_str = format!("{}", contract);
+    let contract_addr_str = ctx
+        .eip712_domain
+        .verifying_contract
+        .as_ref()
+        .map(|c| format!("{}", c));
+    if let Some(s) = contract_addr_str.as_ref() {
         my_fields.push(Field {
             name: "Verifying Contract",
-            value: contract_addr_str.as_str(),
+            value: s.as_str(),
         });
     }
 
-    let mut salt_str = Default::default();
-    if let Some(salt) = ctx.eip712_domain.salt.as_ref() {
-        salt_str = format!("{}", salt);
+    let salt_str = ctx.eip712_domain.salt.as_ref().map(|s| format!("{}", s));
+    if let Some(s) = salt_str.as_ref() {
         my_fields.push(Field {
             name: "Salt",
-            value: salt_str.as_str(),
+            value: s.as_str(),
         });
     }
 
