@@ -19,7 +19,7 @@ use crate::{
     cfx_addr::{cfx_addr_encode, Network},
     handlers::common::Context,
     settings::Settings,
-    types::{Transaction, U256},
+    types::{cfx_str, Transaction, U256},
     AppSW,
 };
 
@@ -37,13 +37,13 @@ use ledger_device_sdk::nbgl::{Field, NbglChoice, NbglReview, PageIndex};
 pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW> {
     let fully_decoded = tx.fully_decoded();
 
-    let value_str = tx.value.cfx_str().ok_or(AppSW::TxDisplayFail)?;
+    let value_str = cfx_str(&tx.value).ok_or(AppSW::TxDisplayFail)?;
     let value_with_unit = format!("{} CFX", value_str);
 
     let network = Network::from_network_id(tx.chain_id);
-    let to_str = cfx_addr_encode(&*tx.to, network).map_err(|_e| AppSW::AddrDisplayFail)?;
+    let to_str = cfx_addr_encode(tx.to.as_slice(), network).map_err(|_e| AppSW::AddrDisplayFail)?;
 
-    let fee_str = tx.max_gas_fee().cfx_str().ok_or(AppSW::TxDisplayFail)?;
+    let fee_str = cfx_str(&tx.max_gas_fee()).ok_or(AppSW::TxDisplayFail)?;
     let fee_with_unit = format!("{} CFX", fee_str);
 
     // Define transaction review fields
@@ -63,9 +63,9 @@ pub fn ui_display_tx(tx: &Transaction, ctx: &mut Context) -> Result<bool, AppSW>
     ];
 
     // If max storage fee is not zero, add it to the review fields
-    let storage_fee_str = tx.max_storage_fee().cfx_str().ok_or(AppSW::TxDisplayFail)?;
+    let storage_fee_str = cfx_str(&tx.max_storage_fee()).ok_or(AppSW::TxDisplayFail)?;
     let storage_fee_with_unit = format!("{} CFX", storage_fee_str);
-    if tx.max_storage_fee() > U256::zero() {
+    if tx.max_storage_fee() > U256::ZERO {
         my_fields.push(Field {
             name: "Max Storage Fees",
             value: storage_fee_with_unit.as_str(),

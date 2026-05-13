@@ -21,8 +21,8 @@ use crate::{
     types::Transaction,
     AppSW,
 };
+use alloy_rlp::Decodable;
 use ledger_device_sdk::io::Comm;
-use rlp_decoder::decode;
 
 pub fn handler_sign_tx(
     comm: &mut Comm,
@@ -56,8 +56,8 @@ pub fn handler_sign_tx(
         // Otherwise, try to parse the transaction
         } else {
             // Try to deserialize the transaction
-            let tx: Transaction =
-                decode(ctx.raw_tx.as_slice()).map_err(|_| AppSW::TxParsingFail)?;
+            let tx = Transaction::decode(&mut ctx.raw_tx.as_slice())
+                .map_err(|_| AppSW::TxParsingFail)?;
             // Display transaction. If user approves
             // the transaction, sign it. Otherwise,
             // return a "deny" status word.
