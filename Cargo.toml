@@ -6,16 +6,11 @@ edition = "2021"
 
 [dependencies]
 ledger_device_sdk = "1.35.1"
-# numtoa = "0.2.4"
 k256 = { version = "0.13.4", default-features = false, features = ["ecdsa"] }
-uint = { version = "0.10.0", default-features = false }
-rlp-decoder = { version = "0.1.0", default-features = false }
 bigdecimal = { version = "0.4.10", default-features = false }
-ledger-rust-eip712 = { git = "https://github.com/Conflux-Chain/ledger-rust-eip712.git", rev = "3c8e11c98fb857f05cdd724f053784ff9d4f105a", default-features = false }
-alloy-primitives = { git = "https://github.com/Conflux-Chain/alloy-rs-core.git", rev = "2a5a324a2c9d33e1cbdb5f694991922e1606ea0f", default-features = false }
-
-# [dev-dependencies]
-# rustc-hex = { version = "2.1.0", default-features = false }
+ledger-rust-eip712 = { git = "https://github.com/Conflux-Chain/ledger-rust-eip712.git", rev = "6e12c3f", default-features = false }
+alloy-primitives = { git = "https://github.com/Conflux-Chain/alloy-rs-core.git", rev = "bbbfea7", default-features = false, features = ["rlp"] }
+alloy-rlp = { git = "https://github.com/Conflux-Chain/rlp.git", rev = "0082477", default-features = false, features = ["derive"] }
 
 [profile.release]
 opt-level = 'z'
